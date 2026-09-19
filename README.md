@@ -1,8 +1,8 @@
 --[[
-    ZetGames-AimLock | Premium Edition v3.8 (FIXED v2)
+    ZetGames-AimLock | Premium Edition v3.8 (WITH NIGHT LOCK)
     Theme: Blue & Black Hacker Style
-    Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam
-    Night Lock: REMOVED
+    Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam + Night Lock
+    Night Lock: 23:00 - 03:00 (Kick dengan pesan TIDUR)
     All Toggles Working - NO BUG
 --]]
 
@@ -100,12 +100,63 @@ local ValidKeys = {
 local KeyWebsite = "https://arkaraffaza387-dotcom.github.io/Key-Zero/"
 
 --==============================================================
+-- NIGHT LOCK
+--==============================================================
+local function IsNightLockActive()
+    local hour = tonumber(os.date("%H", os.time()))
+    if hour >= 23 or hour < 3 then
+        return true
+    end
+    return false
+end
+
+--==============================================================
 -- SCREEN GUI
 --==============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ZetGamesAimLock"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
+
+--==============================================================
+-- KICK FUNCTION (NIGHT LOCK)
+--==============================================================
+local function NightKickPlayer()
+    local KickOverlay = Instance.new("Frame")
+    KickOverlay.Size = UDim2.new(1, 0, 1, 0)
+    KickOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    KickOverlay.BackgroundTransparency = 0.3
+    KickOverlay.ZIndex = 999
+    KickOverlay.Parent = ScreenGui
+
+    local KickFrame = Instance.new("Frame")
+    KickFrame.Size = UDim2.new(0, 350, 0, 100)
+    KickFrame.Position = UDim2.new(0.5, -175, 0.5, -50)
+    KickFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
+    KickFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    KickFrame.BorderSizePixel = 3
+    KickFrame.ZIndex = 1000
+    KickFrame.Parent = KickOverlay
+    Instance.new("UICorner", KickFrame).CornerRadius = UDim.new(0, 12)
+
+    local KickText = Instance.new("TextLabel")
+    KickText.Size = UDim2.new(1, -30, 1, 0)
+    KickText.Position = UDim2.new(0, 15, 0, 0)
+    KickText.BackgroundTransparency = 1
+    KickText.Text = "* TIDUR UNTUK KESEHATAN MU *"
+    KickText.TextColor3 = Color3.fromRGB(255, 0, 0)
+    KickText.Font = Enum.Font.Code
+    KickText.TextSize = 18
+    KickText.ZIndex = 1001
+    KickText.Parent = KickFrame
+
+    task.spawn(function()
+        task.wait(2)
+        pcall(function()
+            LocalPlayer:Kick("* TIDUR UNTUK KESEHATAN MU *")
+        end)
+    end)
+end
 
 --==============================================================
 -- NOTIFICATION
@@ -966,7 +1017,7 @@ local function CreateUI()
     ScrollContent.ZIndex = 11
     ScrollContent.Parent = ScrollFrame
 
-    -- Helper: Section
+    -- Helper
     local function Section(title, y)
         local f = Instance.new("Frame")
         f.Size = UDim2.new(1, -20, 0, 25)
@@ -990,7 +1041,6 @@ local function CreateUI()
         t.Parent = f
     end
 
-    -- Helper: Toggle Button (PROPER - pakai parameter btn)
     local function ToggleButton(text, y, callback)
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, -20, 0, 40)
@@ -1005,14 +1055,10 @@ local function CreateUI()
         btn.ZIndex = 12
         btn.Parent = ScrollContent
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-
-        btn.MouseButton1Click:Connect(function()
-            callback(btn)
-        end)
+        btn.MouseButton1Click:Connect(function() callback(btn) end)
         return btn
     end
 
-    -- Helper: TextBox
     local function TextBox(placeholder, y, defaultText)
         local tb = Instance.new("TextBox")
         tb.Size = UDim2.new(1, -20, 0, 35)
@@ -1032,20 +1078,17 @@ local function CreateUI()
         return tb
     end
 
-    --==========================================================
-    -- USER INFORMATION
-    --==========================================================
+    -- USER INFO
     Section("=== USER INFORMATION ===", 30)
-
-    local UserInfoFrame = Instance.new("Frame")
-    UserInfoFrame.Size = UDim2.new(1, -20, 0, 130)
-    UserInfoFrame.Position = UDim2.new(0, 10, 0, 60)
-    UserInfoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-    UserInfoFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
-    UserInfoFrame.BorderSizePixel = 1
-    UserInfoFrame.ZIndex = 12
-    UserInfoFrame.Parent = ScrollContent
-    Instance.new("UICorner", UserInfoFrame).CornerRadius = UDim.new(0, 4)
+    local UIF = Instance.new("Frame")
+    UIF.Size = UDim2.new(1, -20, 0, 130)
+    UIF.Position = UDim2.new(0, 10, 0, 60)
+    UIF.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+    UIF.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    UIF.BorderSizePixel = 1
+    UIF.ZIndex = 12
+    UIF.Parent = ScrollContent
+    Instance.new("UICorner", UIF).CornerRadius = UDim.new(0, 4)
 
     local NameLbl = Instance.new("TextLabel")
     NameLbl.Size = UDim2.new(1, -15, 0, 25)
@@ -1057,7 +1100,7 @@ local function CreateUI()
     NameLbl.TextSize = 12
     NameLbl.TextXAlignment = Enum.TextXAlignment.Left
     NameLbl.ZIndex = 13
-    NameLbl.Parent = UserInfoFrame
+    NameLbl.Parent = UIF
 
     local UserLbl = Instance.new("TextLabel")
     UserLbl.Size = UDim2.new(1, -15, 0, 25)
@@ -1069,7 +1112,7 @@ local function CreateUI()
     UserLbl.TextSize = 12
     UserLbl.TextXAlignment = Enum.TextXAlignment.Left
     UserLbl.ZIndex = 13
-    UserLbl.Parent = UserInfoFrame
+    UserLbl.Parent = UIF
 
     local VPNLbl = Instance.new("TextLabel")
     VPNLbl.Size = UDim2.new(1, -15, 0, 25)
@@ -1081,7 +1124,7 @@ local function CreateUI()
     VPNLbl.TextSize = 12
     VPNLbl.TextXAlignment = Enum.TextXAlignment.Left
     VPNLbl.ZIndex = 13
-    VPNLbl.Parent = UserInfoFrame
+    VPNLbl.Parent = UIF
 
     task.spawn(function()
         while task.wait(1) do
@@ -1092,9 +1135,7 @@ local function CreateUI()
         end
     end)
 
-    --==========================================================
-    -- MAIN FEATURES
-    --==========================================================
+    -- MAIN
     Section("=== MAIN FEATURES ===", 210)
 
     ToggleButton("> FPS BOOST: OFF", 240, function(btn)
@@ -1178,9 +1219,7 @@ local function CreateUI()
         end
     end)
 
-    --==========================================================
     -- CHAT SPAM
-    --==========================================================
     Section("=== CHAT SPAM ===", 510)
 
     ToggleButton("> CHAT SPAM: OFF", 540, function(btn)
@@ -1233,9 +1272,7 @@ local function CreateUI()
     ChatDelayInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nd = tonumber(ChatDelayInput.Text)
-            if nd then
-                ChatSpamDelay = math.clamp(nd, 1, 10)
-            end
+            if nd then ChatSpamDelay = math.clamp(nd, 1, 10) end
             ChatDelayInput.Text = tostring(ChatSpamDelay)
         end
     end)
@@ -1260,9 +1297,7 @@ local function CreateUI()
         end
     end)
 
-    --==========================================================
-    -- ENHANCED AIMBOT
-    --==========================================================
+    -- AIMBOT
     Section("=== ENHANCED AIMBOT ===", 815)
 
     local AimbotBtn = Instance.new("TextButton")
@@ -1334,7 +1369,6 @@ local function CreateUI()
     CreateModeBtn("SMOOTH", "Smooth", 0.345)
     CreateModeBtn("INSTANT", "Instant", 0.69)
 
-    -- PREDICTION toggle
     ToggleButton("> PREDICTION: OFF", 965, function(btn)
         PredictionEnabled = not PredictionEnabled
         if PredictionEnabled then
@@ -1355,7 +1389,6 @@ local function CreateUI()
         end
     end)
 
-    -- WALL CHECK toggle
     ToggleButton("> WALL_CHECK: OFF", 1050, function(btn)
         WallCheckEnabled = not WallCheckEnabled
         if WallCheckEnabled then
@@ -1367,7 +1400,6 @@ local function CreateUI()
         end
     end)
 
-    -- TEAM CHECK toggle
     ToggleButton("> TEAM_CHECK: OFF", 1095, function(btn)
         TeamCheckEnabled = not TeamCheckEnabled
         if TeamCheckEnabled then
@@ -1421,9 +1453,7 @@ local function CreateUI()
     CreateTargetBtn("Torso", "HumanoidRootPart", 0.37)
     CreateTargetBtn("Body", "UpperTorso", 0.74)
 
-    --==========================================================
-    -- FULL ESP
-    --==========================================================
+    -- ESP
     Section("=== FULL ESP FEATURES ===", 1210)
 
     ToggleButton("> ESP MASTER: OFF", 1240, function(btn)
@@ -1468,9 +1498,7 @@ local function CreateUI()
         b.ZIndex = 12
         b.Parent = ScrollContent
         Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-        b.MouseButton1Click:Connect(function()
-            callback(b)
-        end)
+        b.MouseButton1Click:Connect(function() callback(b) end)
         return b
     end
 
@@ -1568,9 +1596,7 @@ local function CreateUI()
     CreateColorBtn("PUTIH", Color3.fromRGB(255, 255, 255), "PUTIH", 0.345)
     CreateColorBtn("HITAM", Color3.fromRGB(0, 0, 0), "HITAM", 0.69)
 
-    --==========================================================
     -- TELEPORT
-    --==========================================================
     Section("=== TELEPORT (UNLOCKED) ===", 1585)
 
     local TPMouseBtn = Instance.new("TextButton")
@@ -1672,9 +1698,7 @@ local function CreateUI()
         TeleportListFrame.CanvasSize = UDim2.new(0, 0, 0, y + 5)
     end
 
-    --==========================================================
-    -- VISUAL FEATURES
-    --==========================================================
+    -- VISUAL
     Section("=== VISUAL FEATURES ===", 1865)
 
     ToggleButton("> FOV_CIRCLE: OFF", 1895, function(btn)
@@ -1711,9 +1735,7 @@ local function CreateUI()
         end
     end)
 
-    --==========================================================
     -- TOGGLE MENU BUTTON
-    --==========================================================
     local ToggleMenuButton = Instance.new("TextButton")
     ToggleMenuButton.Size = UDim2.new(0, 45, 0, 45)
     ToggleMenuButton.Position = UDim2.new(0, 8, 0.5, -22)
@@ -1749,9 +1771,7 @@ local function CreateUI()
         end
     end)
 
-    --==========================================================
     -- DRAGGABLE
-    --==========================================================
     local function MakeDraggable(frame)
         local dragging = false
         local dragInput, dragStart, startPos
@@ -1788,9 +1808,7 @@ local function CreateUI()
     MakeDraggable(MainHub)
     MakeDraggable(ToggleMenuButton)
 
-    --==========================================================
     -- LOGIN LOGIC
-    --==========================================================
     LoginBtn.MouseButton1Click:Connect(function()
         local key = KeyInput.Text
         local keyData = ValidKeys[key]
@@ -1834,9 +1852,7 @@ local function CreateUI()
         end
     end)
 
-    --==========================================================
     -- PLAYER CONNECTIONS
-    --==========================================================
     Players.PlayerAdded:Connect(function(player)
         task.wait(1)
         if IsLoggedIn then pcall(UpdateTeleportList) end
@@ -1847,9 +1863,7 @@ local function CreateUI()
         if IsLoggedIn then pcall(UpdateTeleportList) end
     end)
 
-    --==============================================================
     -- LOADING ANIMATION
-    --==============================================================
     local loadingMessages = {
         "> LOADING MODULES...",
         "> CONNECTING TO SERVER...",
@@ -1879,14 +1893,18 @@ local function CreateUI()
         LBarFill.Size = UDim2.new(1, 0, 1, 0)
         task.wait(0.5)
         LoadingScreen.Visible = false
-        LoginFrame.Visible = true
-        Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
-        Notify("Login", "> ENTER ACCESS KEY", 3)
+
+        -- CEK NIGHT LOCK
+        if IsNightLockActive() then
+            NightKickPlayer()
+        else
+            LoginFrame.Visible = true
+            Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
+            Notify("Login", "> ENTER ACCESS KEY", 3)
+        end
     end)
 
-    --==========================================================
     -- AUTO UPDATE TELEPORT LIST
-    --==========================================================
     task.spawn(function()
         while task.wait(3) do
             if IsLoggedIn then
