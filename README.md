@@ -1,9 +1,9 @@
 --[[
     ZetGames-AimLock | Premium Edition v3.8
     Theme: Blue & Black Hacker Style
-    System: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + FPS/Ping Display (Top Right) + User Info
+    System: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info
     Login: Key System (5 KEYS)
-    Features: Loading Screen, Compact Mobile UI, Separated Sections, Night Lock, Full ESP, FPS Boost, Rainbow ESP, Fullbright, Enhanced Aimbot, FPS/Ping Display, User Info
+    Features: Loading Screen, Compact Mobile UI, Separated Sections, Night Lock, Full ESP, FPS Boost, Rainbow ESP, Fullbright, Enhanced Aimbot, User Info
     Mobile Friendly - 100% Tested - ALL FEATURES WORKING - NO BUG
 --]]
 
@@ -14,7 +14,6 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
-local Stats = game:GetService("Stats")
 local Camera = workspace.CurrentCamera
 
 local LocalPlayer = Players.LocalPlayer
@@ -63,13 +62,6 @@ local TracerColorName = "MERAH"
 -- FULLBRIGHT
 local FullbrightEnabled = false
 local OriginalLighting = {}
-
--- FPS/PING DISPLAY
-local FPSPingEnabled = true
-local FPSPingFrame = nil
-local FPSValue = 0
-local PingValue = 0
-local FPSUpdateConnection = nil
 
 -- TELEPORT
 local TeleportTargetList = {}
@@ -330,115 +322,6 @@ local function DisableRainbowESP()
         RainbowConnection:Disconnect()
         RainbowConnection = nil
     end
-end
-
--- FPS/PING DISPLAY (DI KANAN ATAS LAYAR)
-local function CreateFPSPingDisplay()
-    FPSPingFrame = Instance.new("Frame")
-    FPSPingFrame.Size = UDim2.new(0, 130, 0, 55)
-    FPSPingFrame.Position = UDim2.new(1, -140, 0, 10) -- Kanan atas
-    FPSPingFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    FPSPingFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
-    FPSPingFrame.BorderSizePixel = 2
-    FPSPingFrame.ZIndex = 90
-    FPSPingFrame.Visible = FPSPingEnabled
-    FPSPingFrame.Parent = ScreenGui
-    
-    local FPSFrameCorner = Instance.new("UICorner")
-    FPSFrameCorner.CornerRadius = UDim.new(0, 6)
-    FPSFrameCorner.Parent = FPSPingFrame
-    
-    local FPSTitle = Instance.new("TextLabel")
-    FPSTitle.Size = UDim2.new(1, -10, 0, 15)
-    FPSTitle.Position = UDim2.new(0, 5, 0, 3)
-    FPSTitle.BackgroundTransparency = 1
-    FPSTitle.Text = "> SYSTEM STATS"
-    FPSTitle.TextColor3 = Color3.fromRGB(0, 180, 255)
-    FPSTitle.Font = Enum.Font.Code
-    FPSTitle.TextSize = 9
-    FPSTitle.TextXAlignment = Enum.TextXAlignment.Left
-    FPSTitle.ZIndex = 91
-    FPSTitle.Parent = FPSPingFrame
-    
-    local FPSLabel = Instance.new("TextLabel")
-    FPSLabel.Size = UDim2.new(1, -10, 0, 15)
-    FPSLabel.Position = UDim2.new(0, 5, 0, 20)
-    FPSLabel.BackgroundTransparency = 1
-    FPSLabel.Text = "> FPS: 60"
-    FPSLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-    FPSLabel.Font = Enum.Font.Code
-    FPSLabel.TextSize = 11
-    FPSLabel.TextXAlignment = Enum.TextXAlignment.Left
-    FPSLabel.ZIndex = 91
-    FPSLabel.Name = "FPSLabel"
-    FPSLabel.Parent = FPSPingFrame
-    
-    local PingLabel = Instance.new("TextLabel")
-    PingLabel.Size = UDim2.new(1, -10, 0, 15)
-    PingLabel.Position = UDim2.new(0, 5, 0, 35)
-    PingLabel.BackgroundTransparency = 1
-    PingLabel.Text = "> PING: 0ms"
-    PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-    PingLabel.Font = Enum.Font.Code
-    PingLabel.TextSize = 11
-    PingLabel.TextXAlignment = Enum.TextXAlignment.Left
-    PingLabel.ZIndex = 91
-    PingLabel.Name = "PingLabel"
-    PingLabel.Parent = FPSPingFrame
-end
-
-local function UpdateFPSPing()
-    if FPSUpdateConnection then
-        FPSUpdateConnection:Disconnect()
-        FPSUpdateConnection = nil
-    end
-    
-    local frameCount = 0
-    local lastTime = tick()
-    
-    FPSUpdateConnection = RunService.RenderStepped:Connect(function()
-        if not FPSPingEnabled then return end
-        
-        frameCount = frameCount + 1
-        local currentTime = tick()
-        
-        if currentTime - lastTime >= 1 then
-            FPSValue = frameCount
-            frameCount = 0
-            lastTime = currentTime
-            
-            pcall(function()
-                PingValue = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-            end)
-            
-            if FPSPingFrame then
-                local fpsLabel = FPSPingFrame:FindFirstChild("FPSLabel")
-                local pingLabel = FPSPingFrame:FindFirstChild("PingLabel")
-                
-                if fpsLabel then
-                    fpsLabel.Text = "> FPS: " .. FPSValue
-                    if FPSValue >= 50 then
-                        fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                    elseif FPSValue >= 30 then
-                        fpsLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-                    else
-                        fpsLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-                    end
-                end
-                
-                if pingLabel then
-                    pingLabel.Text = "> PING: " .. PingValue .. "ms"
-                    if PingValue <= 100 then
-                        pingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                    elseif PingValue <= 200 then
-                        pingLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-                    else
-                        pingLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-                    end
-                end
-            end
-        end
-    end)
 end
 
 -- FPS BOOSTER
@@ -1304,10 +1187,10 @@ local loadingMessages = {
     "> DECRYPTING DATA...",
     "> INITIALIZING FULL ESP...",
     "> INITIALIZING ENHANCED AIMBOT...",
-    "> LOADING FPS/PING DISPLAY...",
     "> LOADING FULLBRIGHT...",
     "> LOADING RAINBOW ESP...",
     "> LOADING TELEPORT...",
+    "> LOADING SPEED HACK...",
     "> SYSTEM READY..."
 }
 
@@ -1511,12 +1394,12 @@ ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 8
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2100)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2000)
 ScrollFrame.ZIndex = 11
 ScrollFrame.Parent = MainHub
 
 local ScrollContent = Instance.new("Frame")
-ScrollContent.Size = UDim2.new(1, 0, 0, 2100)
+ScrollContent.Size = UDim2.new(1, 0, 0, 2000)
 ScrollContent.BackgroundTransparency = 1
 ScrollContent.ZIndex = 11
 ScrollContent.Parent = ScrollFrame
@@ -1648,26 +1531,9 @@ local FullbrightCorner = Instance.new("UICorner")
 FullbrightCorner.CornerRadius = UDim.new(0, 4)
 FullbrightCorner.Parent = FullbrightToggle
 
-local FPSPingToggle = Instance.new("TextButton")
-FPSPingToggle.Size = UDim2.new(1, -20, 0, 40)
-FPSPingToggle.Position = UDim2.new(0, 10, 0, 330)
-FPSPingToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-FPSPingToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
-FPSPingToggle.BorderSizePixel = 1
-FPSPingToggle.Text = "> FPS/PING DISPLAY: ON"
-FPSPingToggle.TextColor3 = Color3.fromRGB(0, 180, 255)
-FPSPingToggle.Font = Enum.Font.Code
-FPSPingToggle.TextSize = 12
-FPSPingToggle.ZIndex = 12
-FPSPingToggle.Parent = ScrollContent
-
-local FPSPingCorner = Instance.new("UICorner")
-FPSPingCorner.CornerRadius = UDim.new(0, 4)
-FPSPingCorner.Parent = FPSPingToggle
-
 local SpeedHackToggle = Instance.new("TextButton")
 SpeedHackToggle.Size = UDim2.new(1, -20, 0, 40)
-SpeedHackToggle.Position = UDim2.new(0, 10, 0, 375)
+SpeedHackToggle.Position = UDim2.new(0, 10, 0, 330)
 SpeedHackToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 SpeedHackToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 SpeedHackToggle.BorderSizePixel = 1
@@ -1684,7 +1550,7 @@ SpeedHackCorner.Parent = SpeedHackToggle
 
 local SpeedInput = Instance.new("TextBox")
 SpeedInput.Size = UDim2.new(1, -20, 0, 35)
-SpeedInput.Position = UDim2.new(0, 10, 0, 420)
+SpeedInput.Position = UDim2.new(0, 10, 0, 375)
 SpeedInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 SpeedInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 SpeedInput.BorderSizePixel = 1
@@ -1703,7 +1569,7 @@ SpeedInputCorner.Parent = SpeedInput
 
 local InfiniteJumpToggle = Instance.new("TextButton")
 InfiniteJumpToggle.Size = UDim2.new(1, -20, 0, 40)
-InfiniteJumpToggle.Position = UDim2.new(0, 10, 0, 460)
+InfiniteJumpToggle.Position = UDim2.new(0, 10, 0, 415)
 InfiniteJumpToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 InfiniteJumpToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 InfiniteJumpToggle.BorderSizePixel = 1
@@ -1720,7 +1586,7 @@ InfiniteJumpCorner.Parent = InfiniteJumpToggle
 
 local NoclipToggle = Instance.new("TextButton")
 NoclipToggle.Size = UDim2.new(1, -20, 0, 40)
-NoclipToggle.Position = UDim2.new(0, 10, 0, 505)
+NoclipToggle.Position = UDim2.new(0, 10, 0, 460)
 NoclipToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 NoclipToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 NoclipToggle.BorderSizePixel = 1
@@ -1736,11 +1602,11 @@ NoclipCorner.CornerRadius = UDim.new(0, 4)
 NoclipCorner.Parent = NoclipToggle
 
 -- === ENHANCED AIMBOT ===
-CreateSection("=== ENHANCED AIMBOT ===", 555)
+CreateSection("=== ENHANCED AIMBOT ===", 510)
 
 local AimbotToggle = Instance.new("TextButton")
 AimbotToggle.Size = UDim2.new(1, -20, 0, 45)
-AimbotToggle.Position = UDim2.new(0, 10, 0, 585)
+AimbotToggle.Position = UDim2.new(0, 10, 0, 540)
 AimbotToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 AimbotToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 AimbotToggle.BorderSizePixel = 2
@@ -1757,7 +1623,7 @@ AimbotCorner.Parent = AimbotToggle
 
 local AimbotModeLabel = Instance.new("TextLabel")
 AimbotModeLabel.Size = UDim2.new(1, -20, 0, 20)
-AimbotModeLabel.Position = UDim2.new(0, 10, 0, 635)
+AimbotModeLabel.Position = UDim2.new(0, 10, 0, 590)
 AimbotModeLabel.BackgroundTransparency = 1
 AimbotModeLabel.Text = "> AIMBOT MODE: ACCURATE"
 AimbotModeLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1769,7 +1635,7 @@ AimbotModeLabel.Parent = ScrollContent
 
 local AimbotModeButtons = Instance.new("Frame")
 AimbotModeButtons.Size = UDim2.new(1, -20, 0, 35)
-AimbotModeButtons.Position = UDim2.new(0, 10, 0, 660)
+AimbotModeButtons.Position = UDim2.new(0, 10, 0, 615)
 AimbotModeButtons.BackgroundTransparency = 1
 AimbotModeButtons.ZIndex = 12
 AimbotModeButtons.Parent = ScrollContent
@@ -1805,7 +1671,7 @@ CreateAimbotModeButton("INSTANT", "Instant", 0.69)
 
 local PredictionToggle = Instance.new("TextButton")
 PredictionToggle.Size = UDim2.new(1, -20, 0, 40)
-PredictionToggle.Position = UDim2.new(0, 10, 0, 705)
+PredictionToggle.Position = UDim2.new(0, 10, 0, 660)
 PredictionToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 PredictionToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 PredictionToggle.BorderSizePixel = 1
@@ -1822,7 +1688,7 @@ PredictionCorner.Parent = PredictionToggle
 
 local PredictionInput = Instance.new("TextBox")
 PredictionInput.Size = UDim2.new(1, -20, 0, 35)
-PredictionInput.Position = UDim2.new(0, 10, 0, 750)
+PredictionInput.Position = UDim2.new(0, 10, 0, 705)
 PredictionInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 PredictionInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 PredictionInput.BorderSizePixel = 1
@@ -1841,7 +1707,7 @@ PredictionInputCorner.Parent = PredictionInput
 
 local WallCheckToggle = Instance.new("TextButton")
 WallCheckToggle.Size = UDim2.new(1, -20, 0, 40)
-WallCheckToggle.Position = UDim2.new(0, 10, 0, 790)
+WallCheckToggle.Position = UDim2.new(0, 10, 0, 745)
 WallCheckToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 WallCheckToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 WallCheckToggle.BorderSizePixel = 1
@@ -1858,7 +1724,7 @@ WallCheckCorner.Parent = WallCheckToggle
 
 local TeamCheckToggle = Instance.new("TextButton")
 TeamCheckToggle.Size = UDim2.new(1, -20, 0, 40)
-TeamCheckToggle.Position = UDim2.new(0, 10, 0, 835)
+TeamCheckToggle.Position = UDim2.new(0, 10, 0, 790)
 TeamCheckToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 TeamCheckToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 TeamCheckToggle.BorderSizePixel = 1
@@ -1875,7 +1741,7 @@ TeamCheckCorner.Parent = TeamCheckToggle
 
 local TargetLabel = Instance.new("TextLabel")
 TargetLabel.Size = UDim2.new(1, -20, 0, 20)
-TargetLabel.Position = UDim2.new(0, 10, 0, 880)
+TargetLabel.Position = UDim2.new(0, 10, 0, 835)
 TargetLabel.BackgroundTransparency = 1
 TargetLabel.Text = "> TARGET_PART: HEAD"
 TargetLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1887,7 +1753,7 @@ TargetLabel.Parent = ScrollContent
 
 local TargetButtons = Instance.new("Frame")
 TargetButtons.Size = UDim2.new(1, -20, 0, 35)
-TargetButtons.Position = UDim2.new(0, 10, 0, 905)
+TargetButtons.Position = UDim2.new(0, 10, 0, 860)
 TargetButtons.BackgroundTransparency = 1
 TargetButtons.ZIndex = 12
 TargetButtons.Parent = ScrollContent
@@ -1921,11 +1787,11 @@ CreateTargetButton("Torso", "HumanoidRootPart", 0.37)
 CreateTargetButton("Body", "UpperTorso", 0.74)
 
 -- === FULL ESP ===
-CreateSection("=== FULL ESP FEATURES ===", 950)
+CreateSection("=== FULL ESP FEATURES ===", 905)
 
 local ESPToggle = Instance.new("TextButton")
 ESPToggle.Size = UDim2.new(1, -20, 0, 40)
-ESPToggle.Position = UDim2.new(0, 10, 0, 980)
+ESPToggle.Position = UDim2.new(0, 10, 0, 935)
 ESPToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPToggle.BorderSizePixel = 1
@@ -1942,7 +1808,7 @@ ESPCorner.Parent = ESPToggle
 
 local RainbowESPToggle = Instance.new("TextButton")
 RainbowESPToggle.Size = UDim2.new(1, -20, 0, 40)
-RainbowESPToggle.Position = UDim2.new(0, 10, 0, 1025)
+RainbowESPToggle.Position = UDim2.new(0, 10, 0, 980)
 RainbowESPToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 RainbowESPToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 RainbowESPToggle.BorderSizePixel = 2
@@ -1959,7 +1825,7 @@ RainbowESPCorner.Parent = RainbowESPToggle
 
 local ESPBoxToggle = Instance.new("TextButton")
 ESPBoxToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPBoxToggle.Position = UDim2.new(0, 10, 0, 1070)
+ESPBoxToggle.Position = UDim2.new(0, 10, 0, 1025)
 ESPBoxToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPBoxToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPBoxToggle.BorderSizePixel = 1
@@ -1976,7 +1842,7 @@ ESPBoxCorner.Parent = ESPBoxToggle
 
 local ESPNameToggle = Instance.new("TextButton")
 ESPNameToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPNameToggle.Position = UDim2.new(0.52, 5, 0, 1070)
+ESPNameToggle.Position = UDim2.new(0.52, 5, 0, 1025)
 ESPNameToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPNameToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPNameToggle.BorderSizePixel = 1
@@ -1993,7 +1859,7 @@ ESPNameCorner.Parent = ESPNameToggle
 
 local ESPDistanceToggle = Instance.new("TextButton")
 ESPDistanceToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPDistanceToggle.Position = UDim2.new(0, 10, 0, 1110)
+ESPDistanceToggle.Position = UDim2.new(0, 10, 0, 1065)
 ESPDistanceToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPDistanceToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPDistanceToggle.BorderSizePixel = 1
@@ -2010,7 +1876,7 @@ ESPDistanceCorner.Parent = ESPDistanceToggle
 
 local ESPHealthToggle = Instance.new("TextButton")
 ESPHealthToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPHealthToggle.Position = UDim2.new(0.52, 5, 0, 1110)
+ESPHealthToggle.Position = UDim2.new(0.52, 5, 0, 1065)
 ESPHealthToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPHealthToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPHealthToggle.BorderSizePixel = 1
@@ -2027,7 +1893,7 @@ ESPHealthCorner.Parent = ESPHealthToggle
 
 local ESPSkeletonToggle = Instance.new("TextButton")
 ESPSkeletonToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPSkeletonToggle.Position = UDim2.new(0, 10, 0, 1150)
+ESPSkeletonToggle.Position = UDim2.new(0, 10, 0, 1105)
 ESPSkeletonToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPSkeletonToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPSkeletonToggle.BorderSizePixel = 1
@@ -2044,7 +1910,7 @@ ESPSkeletonCorner.Parent = ESPSkeletonToggle
 
 local ESPHeadDotToggle = Instance.new("TextButton")
 ESPHeadDotToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPHeadDotToggle.Position = UDim2.new(0.52, 5, 0, 1150)
+ESPHeadDotToggle.Position = UDim2.new(0.52, 5, 0, 1105)
 ESPHeadDotToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPHeadDotToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPHeadDotToggle.BorderSizePixel = 1
@@ -2061,7 +1927,7 @@ ESPHeadDotCorner.Parent = ESPHeadDotToggle
 
 local ESPChamsToggle = Instance.new("TextButton")
 ESPChamsToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPChamsToggle.Position = UDim2.new(0, 10, 0, 1190)
+ESPChamsToggle.Position = UDim2.new(0, 10, 0, 1145)
 ESPChamsToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPChamsToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPChamsToggle.BorderSizePixel = 1
@@ -2078,7 +1944,7 @@ ESPChamsCorner.Parent = ESPChamsToggle
 
 local ESPTracerToggle = Instance.new("TextButton")
 ESPTracerToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPTracerToggle.Position = UDim2.new(0.52, 5, 0, 1190)
+ESPTracerToggle.Position = UDim2.new(0.52, 5, 0, 1145)
 ESPTracerToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPTracerToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPTracerToggle.BorderSizePixel = 1
@@ -2095,7 +1961,7 @@ ESPTracerCorner.Parent = ESPTracerToggle
 
 local TracerColorLabel = Instance.new("TextLabel")
 TracerColorLabel.Size = UDim2.new(1, -20, 0, 20)
-TracerColorLabel.Position = UDim2.new(0, 10, 0, 1235)
+TracerColorLabel.Position = UDim2.new(0, 10, 0, 1190)
 TracerColorLabel.BackgroundTransparency = 1
 TracerColorLabel.Text = "> TRACER COLOR: MERAH"
 TracerColorLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -2107,7 +1973,7 @@ TracerColorLabel.Parent = ScrollContent
 
 local TracerColorButtons = Instance.new("Frame")
 TracerColorButtons.Size = UDim2.new(1, -20, 0, 40)
-TracerColorButtons.Position = UDim2.new(0, 10, 0, 1260)
+TracerColorButtons.Position = UDim2.new(0, 10, 0, 1215)
 TracerColorButtons.BackgroundTransparency = 1
 TracerColorButtons.ZIndex = 12
 TracerColorButtons.Parent = ScrollContent
@@ -2142,11 +2008,11 @@ CreateTracerColorButton("PUTIH", Color3.fromRGB(255, 255, 255), "PUTIH", 0.345, 
 CreateTracerColorButton("HITAM", Color3.fromRGB(0, 0, 0), "HITAM", 0.69, 0)
 
 -- === TELEPORT ===
-CreateSection("=== TELEPORT (UNLOCKED) ===", 1325)
+CreateSection("=== TELEPORT (UNLOCKED) ===", 1280)
 
 local TeleportMouseBtn = Instance.new("TextButton")
 TeleportMouseBtn.Size = UDim2.new(1, -20, 0, 40)
-TeleportMouseBtn.Position = UDim2.new(0, 10, 0, 1355)
+TeleportMouseBtn.Position = UDim2.new(0, 10, 0, 1310)
 TeleportMouseBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 TeleportMouseBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
 TeleportMouseBtn.BorderSizePixel = 1
@@ -2163,7 +2029,7 @@ TeleportMouseCorner.Parent = TeleportMouseBtn
 
 local SaveLocBtn = Instance.new("TextButton")
 SaveLocBtn.Size = UDim2.new(0.48, -15, 0, 40)
-SaveLocBtn.Position = UDim2.new(0, 10, 0, 1400)
+SaveLocBtn.Position = UDim2.new(0, 10, 0, 1355)
 SaveLocBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 SaveLocBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
 SaveLocBtn.BorderSizePixel = 1
@@ -2180,7 +2046,7 @@ SaveLocCorner.Parent = SaveLocBtn
 
 local LoadLocBtn = Instance.new("TextButton")
 LoadLocBtn.Size = UDim2.new(0.48, -15, 0, 40)
-LoadLocBtn.Position = UDim2.new(0.52, 5, 0, 1400)
+LoadLocBtn.Position = UDim2.new(0.52, 5, 0, 1355)
 LoadLocBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 LoadLocBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
 LoadLocBtn.BorderSizePixel = 1
@@ -2197,7 +2063,7 @@ LoadLocCorner.Parent = LoadLocBtn
 
 local TeleportListLabel = Instance.new("TextLabel")
 TeleportListLabel.Size = UDim2.new(1, -20, 0, 20)
-TeleportListLabel.Position = UDim2.new(0, 10, 0, 1445)
+TeleportListLabel.Position = UDim2.new(0, 10, 0, 1400)
 TeleportListLabel.BackgroundTransparency = 1
 TeleportListLabel.Text = "> PLAYERS (CLICK TO TELEPORT):"
 TeleportListLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -2209,7 +2075,7 @@ TeleportListLabel.Parent = ScrollContent
 
 local TeleportListFrame = Instance.new("ScrollingFrame")
 TeleportListFrame.Size = UDim2.new(1, -20, 0, 120)
-TeleportListFrame.Position = UDim2.new(0, 10, 0, 1470)
+TeleportListFrame.Position = UDim2.new(0, 10, 0, 1425)
 TeleportListFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
 TeleportListFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
 TeleportListFrame.BorderSizePixel = 1
@@ -2224,11 +2090,11 @@ TeleportListCorner.CornerRadius = UDim.new(0, 4)
 TeleportListCorner.Parent = TeleportListFrame
 
 -- === VISUAL ===
-CreateSection("=== VISUAL FEATURES ===", 1605)
+CreateSection("=== VISUAL FEATURES ===", 1560)
 
 local FOVToggle = Instance.new("TextButton")
 FOVToggle.Size = UDim2.new(1, -20, 0, 40)
-FOVToggle.Position = UDim2.new(0, 10, 0, 1635)
+FOVToggle.Position = UDim2.new(0, 10, 0, 1590)
 FOVToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 FOVToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 FOVToggle.BorderSizePixel = 1
@@ -2245,7 +2111,7 @@ FOVCorner.Parent = FOVToggle
 
 local FOVInput = Instance.new("TextBox")
 FOVInput.Size = UDim2.new(1, -20, 0, 35)
-FOVInput.Position = UDim2.new(0, 10, 0, 1680)
+FOVInput.Position = UDim2.new(0, 10, 0, 1635)
 FOVInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 FOVInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 FOVInput.BorderSizePixel = 1
@@ -2264,7 +2130,7 @@ FOVInputCorner.Parent = FOVInput
 
 local SmoothInput = Instance.new("TextBox")
 SmoothInput.Size = UDim2.new(1, -20, 0, 35)
-SmoothInput.Position = UDim2.new(0, 10, 0, 1720)
+SmoothInput.Position = UDim2.new(0, 10, 0, 1675)
 SmoothInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 SmoothInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 SmoothInput.BorderSizePixel = 1
@@ -2332,13 +2198,6 @@ task.spawn(function()
     
     task.wait(0.5)
     LoadingScreen.Visible = false
-    
-    -- Buat FPS/Ping Display SETELAH loading
-    CreateFPSPingDisplay()
-    UpdateFPSPing()
-    if FPSPingFrame then
-        MakeDraggable(FPSPingFrame)
-    end
     
     if IsNightLockActive() then
         KickPlayer("* TIDUR UNTUK KESEHATAN MU *")
@@ -2431,21 +2290,6 @@ FullbrightToggle.MouseButton1Click:Connect(function()
         FullbrightToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         DisableFullbright()
         Notify("Fullbright", "> DISABLED", 2)
-    end
-end)
-
-FPSPingToggle.MouseButton1Click:Connect(function()
-    FPSPingEnabled = not FPSPingEnabled
-    if FPSPingEnabled then
-        FPSPingToggle.Text = "> FPS/PING DISPLAY: ON"
-        FPSPingToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-        if FPSPingFrame then FPSPingFrame.Visible = true end
-        Notify("FPS/Ping", "> ENABLED", 2)
-    else
-        FPSPingToggle.Text = "> FPS/PING DISPLAY: OFF"
-        FPSPingToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-        if FPSPingFrame then FPSPingFrame.Visible = false end
-        Notify("FPS/Ping", "> DISABLED", 2)
     end
 end)
 
