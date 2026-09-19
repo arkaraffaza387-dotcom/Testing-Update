@@ -1,9 +1,9 @@
 --[[
-    ZetGames-AimLock | Premium Edition v3.8 (FIXED)
+    ZetGames-AimLock | Premium Edition v3.8 (FIXED v2)
     Theme: Blue & Black Hacker Style
     Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam
     Night Lock: REMOVED
-    Mobile Friendly - 100% Tested - NO BUG
+    All Toggles Working - NO BUG
 --]]
 
 --==============================================================
@@ -37,7 +37,7 @@ local MenuKey = Enum.KeyCode.RightControl
 local IsLoggedIn = false
 local WallCheckEnabled = false
 local TeamCheckEnabled = false
-local PredictionEnabled = true
+local PredictionEnabled = false
 local PredictionAmount = 5
 local FOVCircleEnabled = false
 local AimbotMode = "Accurate"
@@ -108,7 +108,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
 --==============================================================
--- NOTIFICATION SYSTEM
+-- NOTIFICATION
 --==============================================================
 local Notifications = Instance.new("Frame")
 Notifications.Size = UDim2.new(0, 250, 1, 0)
@@ -163,7 +163,7 @@ local function Notify(title, message, duration)
 end
 
 --==============================================================
--- ============== SEMUA FUNGSI CHEAT ============================
+-- FUNGSI CHEAT
 --==============================================================
 
 -- FULLBRIGHT
@@ -287,7 +287,7 @@ local function SendChatMessage(message)
     return sent
 end
 
-local function EnableChatSpam()
+local function StartChatSpamLoop()
     task.spawn(function()
         while ChatSpamEnabled do
             task.wait(ChatSpamDelay)
@@ -420,7 +420,7 @@ local function ApplySpeedHack()
     end
 end
 
--- ESP CREATE/REMOVE
+-- ESP
 local function CreateESP(player)
     if ESPObjects[player] then return end
     local d = {}
@@ -477,7 +477,6 @@ local function RemoveChams(player)
     end
 end
 
--- UPDATE ESP
 local function UpdateESP()
     if not ESPEnabled or not IsLoggedIn then
         for _, d in pairs(ESPObjects) do
@@ -533,9 +532,7 @@ local function UpdateESP()
                         end
                     end
 
-                    -- Skeleton
-                    local showSkel = ESPSkeletonEnabled
-                    if showSkel then
+                    if ESPSkeletonEnabled then
                         local function SP(p)
                             if p then local a,b = Camera:WorldToViewportPoint(p.Position); if b then return Vector2.new(a.X,a.Y) end end
                             return nil
@@ -686,7 +683,6 @@ local function UpdateFOV()
     end
 end
 
--- Main render loop
 RunService.RenderStepped:Connect(function()
     pcall(function()
         UpdateFOV()
@@ -783,19 +779,6 @@ local function CreateUI()
     LStatus.TextXAlignment = Enum.TextXAlignment.Left
     LStatus.ZIndex = 302
     LStatus.Parent = LoadingBg
-
-    local loadingMessages = {
-        "> LOADING MODULES...",
-        "> CONNECTING TO SERVER...",
-        "> DECRYPTING DATA...",
-        "> INITIALIZING FULL ESP...",
-        "> INITIALIZING ENHANCED AIMBOT...",
-        "> LOADING CHAT SPAM...",
-        "> LOADING FULLBRIGHT...",
-        "> LOADING RAINBOW ESP...",
-        "> LOADING TELEPORT...",
-        "> SYSTEM READY..."
-    }
 
     --===== LOGIN FRAME =====
     local LoginFrame = Instance.new("Frame")
@@ -1007,11 +990,11 @@ local function CreateUI()
         t.Parent = f
     end
 
-    -- Helper: Toggle Button
-    local function ToggleButton(name, text, y, xOffset, xWidth, callback)
+    -- Helper: Toggle Button (PROPER - pakai parameter btn)
+    local function ToggleButton(text, y, callback)
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(xWidth or 1, -20, 0, 40)
-        btn.Position = UDim2.new(xOffset or 0, 10, 0, y)
+        btn.Size = UDim2.new(1, -20, 0, 40)
+        btn.Position = UDim2.new(0, 10, 0, y)
         btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         btn.BorderColor3 = Color3.fromRGB(0, 150, 255)
         btn.BorderSizePixel = 1
@@ -1022,7 +1005,10 @@ local function CreateUI()
         btn.ZIndex = 12
         btn.Parent = ScrollContent
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-        btn.MouseButton1Click:Connect(callback)
+
+        btn.MouseButton1Click:Connect(function()
+            callback(btn)
+        end)
         return btn
     end
 
@@ -1047,7 +1033,7 @@ local function CreateUI()
     end
 
     --==========================================================
-    -- USER INFORMATION SECTION
+    -- USER INFORMATION
     --==========================================================
     Section("=== USER INFORMATION ===", 30)
 
@@ -1111,45 +1097,45 @@ local function CreateUI()
     --==========================================================
     Section("=== MAIN FEATURES ===", 210)
 
-    local FPSBoostBtn = ToggleButton("FPSBoost", "> FPS BOOST: OFF", 240, 0, 1, function()
+    ToggleButton("> FPS BOOST: OFF", 240, function(btn)
         FPSBoostEnabled = not FPSBoostEnabled
         if FPSBoostEnabled then
-            FPSBoostBtn.Text = "> FPS BOOST: ON"
-            FPSBoostBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> FPS BOOST: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             EnableFPSBoost()
             Notify("FPS Boost", "> ENABLED", 2)
         else
-            FPSBoostBtn.Text = "> FPS BOOST: OFF"
-            FPSBoostBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> FPS BOOST: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             DisableFPSBoost()
             Notify("FPS Boost", "> DISABLED", 2)
         end
     end)
 
-    local FullbrightBtn = ToggleButton("Fullbright", "> FULLBRIGHT: OFF", 285, 0, 1, function()
+    ToggleButton("> FULLBRIGHT: OFF", 285, function(btn)
         FullbrightEnabled = not FullbrightEnabled
         if FullbrightEnabled then
-            FullbrightBtn.Text = "> FULLBRIGHT: ON"
-            FullbrightBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> FULLBRIGHT: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             EnableFullbright()
             Notify("Fullbright", "> ENABLED", 2)
         else
-            FullbrightBtn.Text = "> FULLBRIGHT: OFF"
-            FullbrightBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> FULLBRIGHT: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             DisableFullbright()
             Notify("Fullbright", "> DISABLED", 2)
         end
     end)
 
-    local SpeedBtn = ToggleButton("SpeedHack", "> SPEED HACK: OFF", 330, 0, 1, function()
+    ToggleButton("> SPEED HACK: OFF", 330, function(btn)
         SpeedHackEnabled = not SpeedHackEnabled
         if SpeedHackEnabled then
-            SpeedBtn.Text = "> SPEED HACK: ON"
-            SpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> SPEED HACK: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             ApplySpeedHack()
         else
-            SpeedBtn.Text = "> SPEED HACK: OFF"
-            SpeedBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> SPEED HACK: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             ApplySpeedHack()
         end
     end)
@@ -1166,28 +1152,28 @@ local function CreateUI()
         end
     end)
 
-    local InfJumpBtn = ToggleButton("InfJump", "> INFINITE JUMP: OFF", 415, 0, 1, function()
+    ToggleButton("> INFINITE JUMP: OFF", 415, function(btn)
         InfiniteJumpEnabled = not InfiniteJumpEnabled
         if InfiniteJumpEnabled then
-            InfJumpBtn.Text = "> INFINITE JUMP: ON"
-            InfJumpBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> INFINITE JUMP: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             EnableInfiniteJump()
         else
-            InfJumpBtn.Text = "> INFINITE JUMP: OFF"
-            InfJumpBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> INFINITE JUMP: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             DisableInfiniteJump()
         end
     end)
 
-    local NoclipBtn = ToggleButton("Noclip", "> NOCLIP: OFF", 460, 0, 1, function()
+    ToggleButton("> NOCLIP: OFF", 460, function(btn)
         NoclipEnabled = not NoclipEnabled
         if NoclipEnabled then
-            NoclipBtn.Text = "> NOCLIP: ON"
-            NoclipBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> NOCLIP: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             EnableNoclip()
         else
-            NoclipBtn.Text = "> NOCLIP: OFF"
-            NoclipBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> NOCLIP: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             DisableNoclip()
         end
     end)
@@ -1197,16 +1183,16 @@ local function CreateUI()
     --==========================================================
     Section("=== CHAT SPAM ===", 510)
 
-    local ChatBtn = ToggleButton("ChatSpam", "> CHAT SPAM: OFF", 540, 0, 1, function()
+    ToggleButton("> CHAT SPAM: OFF", 540, function(btn)
         ChatSpamEnabled = not ChatSpamEnabled
         if ChatSpamEnabled then
-            ChatBtn.Text = "> CHAT SPAM: ON"
-            ChatBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-            EnableChatSpam()
+            btn.Text = "> CHAT SPAM: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            StartChatSpamLoop()
             Notify("Chat Spam", "> ENABLED", 2)
         else
-            ChatBtn.Text = "> CHAT SPAM: OFF"
-            ChatBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> CHAT SPAM: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             Notify("Chat Spam", "> DISABLED", 2)
         end
     end)
@@ -1273,18 +1259,6 @@ local function CreateUI()
             Notify("Chat Spam", "> SENT", 2)
         end
     end)
-
-    local ChatInfoLbl = Instance.new("TextLabel")
-    ChatInfoLbl.Size = UDim2.new(1, -20, 0, 40)
-    ChatInfoLbl.Position = UDim2.new(0, 10, 0, 760)
-    ChatInfoLbl.BackgroundTransparency = 1
-    ChatInfoLbl.Text = "> Spam chat otomatis\n> Bisa di-toggle ON/OFF"
-    ChatInfoLbl.TextColor3 = Color3.fromRGB(0, 130, 255)
-    ChatInfoLbl.Font = Enum.Font.Code
-    ChatInfoLbl.TextSize = 9
-    ChatInfoLbl.TextXAlignment = Enum.TextXAlignment.Left
-    ChatInfoLbl.ZIndex = 12
-    ChatInfoLbl.Parent = ScrollContent
 
     --==========================================================
     -- ENHANCED AIMBOT
@@ -1360,17 +1334,17 @@ local function CreateUI()
     CreateModeBtn("SMOOTH", "Smooth", 0.345)
     CreateModeBtn("INSTANT", "Instant", 0.69)
 
-    local PredBtn = ToggleButton("Pred", "> PREDICTION: ON", 965, 0, 1, function()
+    -- PREDICTION toggle
+    ToggleButton("> PREDICTION: OFF", 965, function(btn)
         PredictionEnabled = not PredictionEnabled
         if PredictionEnabled then
-            PredBtn.Text = "> PREDICTION: ON"
-            PredBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> PREDICTION: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
         else
-            PredBtn.Text = "> PREDICTION: OFF"
-            PredBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> PREDICTION: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         end
     end)
-    PredBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 
     local PredInput = TextBox("> Prediction (1-10)", 1010)
     PredInput.FocusLost:Connect(function(enterPressed)
@@ -1381,25 +1355,27 @@ local function CreateUI()
         end
     end)
 
-    local WallBtn = ToggleButton("Wall", "> WALL_CHECK: OFF", 1050, 0, 1, function()
+    -- WALL CHECK toggle
+    ToggleButton("> WALL_CHECK: OFF", 1050, function(btn)
         WallCheckEnabled = not WallCheckEnabled
         if WallCheckEnabled then
-            WallBtn.Text = "> WALL_CHECK: ON"
-            WallBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> WALL_CHECK: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
         else
-            WallBtn.Text = "> WALL_CHECK: OFF"
-            WallBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> WALL_CHECK: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         end
     end)
 
-    local TeamBtn = ToggleButton("Team", "> TEAM_CHECK: OFF", 1095, 0, 1, function()
+    -- TEAM CHECK toggle
+    ToggleButton("> TEAM_CHECK: OFF", 1095, function(btn)
         TeamCheckEnabled = not TeamCheckEnabled
         if TeamCheckEnabled then
-            TeamBtn.Text = "> TEAM_CHECK: ON"
-            TeamBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> TEAM_CHECK: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
         else
-            TeamBtn.Text = "> TEAM_CHECK: OFF"
-            TeamBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> TEAM_CHECK: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         end
     end)
 
@@ -1450,104 +1426,103 @@ local function CreateUI()
     --==========================================================
     Section("=== FULL ESP FEATURES ===", 1210)
 
-    local ESPBtn = ToggleButton("ESP", "> ESP MASTER: OFF", 1240, 0, 1, function()
+    ToggleButton("> ESP MASTER: OFF", 1240, function(btn)
         ESPEnabled = not ESPEnabled
         if ESPEnabled then
-            ESPBtn.Text = "> ESP MASTER: ON"
-            ESPBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> ESP MASTER: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             Notify("ESP", "> ENABLED", 2)
         else
-            ESPBtn.Text = "> ESP MASTER: OFF"
-            ESPBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> ESP MASTER: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             Notify("ESP", "> DISABLED", 2)
         end
     end)
 
-    local RainbowBtn = ToggleButton("Rainbow", "> 🌈 RAINBOW ESP: OFF", 1285, 0, 1, function()
+    ToggleButton("> 🌈 RAINBOW ESP: OFF", 1285, function(btn)
         RainbowESPEnabled = not RainbowESPEnabled
         if RainbowESPEnabled then
-            RainbowBtn.Text = "> 🌈 RAINBOW ESP: ON"
-            RainbowBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> 🌈 RAINBOW ESP: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             EnableRainbowESP()
             Notify("Rainbow ESP", "> ENABLED", 2)
         else
-            RainbowBtn.Text = "> 🌈 RAINBOW ESP: OFF"
-            RainbowBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> 🌈 RAINBOW ESP: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
             DisableRainbowESP()
             Notify("Rainbow ESP", "> DISABLED", 2)
         end
     end)
 
-    local function TogglePair(name1, t1, y, xPos, cb1)
+    local function TogglePair(text, y, xPos, callback)
         local b = Instance.new("TextButton")
         b.Size = UDim2.new(0.48, -15, 0, 35)
         b.Position = UDim2.new(xPos, 0, 0, y)
         b.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
         b.BorderColor3 = Color3.fromRGB(0, 180, 255)
         b.BorderSizePixel = 1
-        b.Text = t1
+        b.Text = text
         b.TextColor3 = Color3.fromRGB(0, 180, 255)
         b.Font = Enum.Font.Code
         b.TextSize = 10
         b.ZIndex = 12
         b.Parent = ScrollContent
         Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-        b.MouseButton1Click:Connect(cb1)
+        b.MouseButton1Click:Connect(function()
+            callback(b)
+        end)
         return b
     end
 
-    local BoxBtn = TogglePair("Box", "> BOX: ON", 1330, 0, function()
+    TogglePair("> BOX: ON", 1330, 0, function(btn)
         ESPBoxEnabled = not ESPBoxEnabled
-        BoxBtn.Text = ESPBoxEnabled and "> BOX: ON" or "> BOX: OFF"
-        BoxBtn.BackgroundColor3 = ESPBoxEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPBoxEnabled and "> BOX: ON" or "> BOX: OFF"
+        btn.BackgroundColor3 = ESPBoxEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    local NameBtn = TogglePair("Name", "> NAME: ON", 1330, 0.52, function()
+    TogglePair("> NAME: ON", 1330, 0.52, function(btn)
         ESPNameEnabled = not ESPNameEnabled
-        NameBtn.Text = ESPNameEnabled and "> NAME: ON" or "> NAME: OFF"
-        NameBtn.BackgroundColor3 = ESPNameEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPNameEnabled and "> NAME: ON" or "> NAME: OFF"
+        btn.BackgroundColor3 = ESPNameEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    local DistBtn = TogglePair("Dist", "> DISTANCE: ON", 1370, 0, function()
+    TogglePair("> DISTANCE: ON", 1370, 0, function(btn)
         ESPDistanceEnabled = not ESPDistanceEnabled
-        DistBtn.Text = ESPDistanceEnabled and "> DISTANCE: ON" or "> DISTANCE: OFF"
-        DistBtn.BackgroundColor3 = ESPDistanceEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPDistanceEnabled and "> DISTANCE: ON" or "> DISTANCE: OFF"
+        btn.BackgroundColor3 = ESPDistanceEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    local HealthBtn = TogglePair("Health", "> HEALTH: ON", 1370, 0.52, function()
+    TogglePair("> HEALTH: ON", 1370, 0.52, function(btn)
         ESPHealthEnabled = not ESPHealthEnabled
-        HealthBtn.Text = ESPHealthEnabled and "> HEALTH: ON" or "> HEALTH: OFF"
-        HealthBtn.BackgroundColor3 = ESPHealthEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPHealthEnabled and "> HEALTH: ON" or "> HEALTH: OFF"
+        btn.BackgroundColor3 = ESPHealthEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    local SkeletonBtn = TogglePair("Skel", "> SKELETON: OFF", 1410, 0, function()
+    TogglePair("> SKELETON: OFF", 1410, 0, function(btn)
         ESPSkeletonEnabled = not ESPSkeletonEnabled
-        SkeletonBtn.Text = ESPSkeletonEnabled and "> SKELETON: ON" or "> SKELETON: OFF"
-        SkeletonBtn.BackgroundColor3 = ESPSkeletonEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPSkeletonEnabled and "> SKELETON: ON" or "> SKELETON: OFF"
+        btn.BackgroundColor3 = ESPSkeletonEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
-    SkeletonBtn.BackgroundColor3 = Color3.fromRGB(15,15,30)
 
-    local HeadDotBtn = TogglePair("HeadDot", "> HEAD DOT: OFF", 1410, 0.52, function()
+    TogglePair("> HEAD DOT: OFF", 1410, 0.52, function(btn)
         ESPHeadDotEnabled = not ESPHeadDotEnabled
-        HeadDotBtn.Text = ESPHeadDotEnabled and "> HEAD DOT: ON" or "> HEAD DOT: OFF"
-        HeadDotBtn.BackgroundColor3 = ESPHeadDotEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPHeadDotEnabled and "> HEAD DOT: ON" or "> HEAD DOT: OFF"
+        btn.BackgroundColor3 = ESPHeadDotEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
-    HeadDotBtn.BackgroundColor3 = Color3.fromRGB(15,15,30)
 
-    local ChamsBtn = TogglePair("Chams", "> CHAMS: OFF", 1450, 0, function()
+    TogglePair("> CHAMS: OFF", 1450, 0, function(btn)
         ESPChamsEnabled = not ESPChamsEnabled
-        ChamsBtn.Text = ESPChamsEnabled and "> CHAMS: ON" or "> CHAMS: OFF"
-        ChamsBtn.BackgroundColor3 = ESPChamsEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPChamsEnabled and "> CHAMS: ON" or "> CHAMS: OFF"
+        btn.BackgroundColor3 = ESPChamsEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
         if not ESPChamsEnabled then
             for p, _ in pairs(ChamsObjects) do RemoveChams(p) end
         end
     end)
-    ChamsBtn.BackgroundColor3 = Color3.fromRGB(15,15,30)
 
-    local TracerBtn = TogglePair("Tracer", "> TRACER: ON", 1450, 0.52, function()
+    TogglePair("> TRACER: ON", 1450, 0.52, function(btn)
         ESPTracerEnabled = not ESPTracerEnabled
-        TracerBtn.Text = ESPTracerEnabled and "> TRACER: ON" or "> TRACER: OFF"
-        TracerBtn.BackgroundColor3 = ESPTracerEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.Text = ESPTracerEnabled and "> TRACER: ON" or "> TRACER: OFF"
+        btn.BackgroundColor3 = ESPTracerEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
     local TracerColorLbl = Instance.new("TextLabel")
@@ -1668,7 +1643,6 @@ local function CreateUI()
     TeleportListFrame.Parent = ScrollContent
     Instance.new("UICorner", TeleportListFrame).CornerRadius = UDim.new(0, 4)
 
-    -- Function Update Teleport List
     local function UpdateTeleportList()
         for _, b in pairs(TeleportTargetList) do
             if b then pcall(function() b:Destroy() end) end
@@ -1703,16 +1677,16 @@ local function CreateUI()
     --==========================================================
     Section("=== VISUAL FEATURES ===", 1865)
 
-    local FOVBtn = ToggleButton("FOV", "> FOV_CIRCLE: OFF", 1895, 0, 1, function()
+    ToggleButton("> FOV_CIRCLE: OFF", 1895, function(btn)
         FOVCircleEnabled = not FOVCircleEnabled
         FOVCircle.Visible = FOVCircleEnabled
         if FOVCircleEnabled then
-            FOVBtn.Text = "> FOV_CIRCLE: ON"
-            FOVBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.Text = "> FOV_CIRCLE: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
             FOVCircle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
         else
-            FOVBtn.Text = "> FOV_CIRCLE: OFF"
-            FOVBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.Text = "> FOV_CIRCLE: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         end
     end)
 
@@ -1815,7 +1789,7 @@ local function CreateUI()
     MakeDraggable(ToggleMenuButton)
 
     --==========================================================
-    -- LOGIN BUTTON LOGIC
+    -- LOGIN LOGIC
     --==========================================================
     LoginBtn.MouseButton1Click:Connect(function()
         local key = KeyInput.Text
@@ -1873,9 +1847,22 @@ local function CreateUI()
         if IsLoggedIn then pcall(UpdateTeleportList) end
     end)
 
-    --==========================================================
+    --==============================================================
     -- LOADING ANIMATION
-    --==========================================================
+    --==============================================================
+    local loadingMessages = {
+        "> LOADING MODULES...",
+        "> CONNECTING TO SERVER...",
+        "> DECRYPTING DATA...",
+        "> INITIALIZING FULL ESP...",
+        "> INITIALIZING ENHANCED AIMBOT...",
+        "> LOADING CHAT SPAM...",
+        "> LOADING FULLBRIGHT...",
+        "> LOADING RAINBOW ESP...",
+        "> LOADING TELEPORT...",
+        "> SYSTEM READY..."
+    }
+
     task.spawn(function()
         local totalTime = 10
         local interval = totalTime / 100
@@ -1911,6 +1898,6 @@ local function CreateUI()
 end
 
 --==============================================================
--- RUN UI
+-- RUN
 --==============================================================
 pcall(CreateUI)
