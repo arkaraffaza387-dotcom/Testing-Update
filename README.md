@@ -71,6 +71,12 @@ local FPSValue = 0
 local PingValue = 0
 local FPSUpdateConnection = nil
 
+-- SEPARATE SCREEN GUI FOR FPS/PING (biar gak nutupin menu utama)
+local FPSScreenGui = Instance.new("ScreenGui")
+FPSScreenGui.Name = "ZetGamesFPSDisplay"
+FPSScreenGui.ResetOnSpawn = false
+FPSScreenGui.Parent = game:GetService("CoreGui")
+
 -- TELEPORT
 local TeleportTargetList = {}
 
@@ -332,7 +338,7 @@ local function DisableRainbowESP()
     end
 end
 
--- FPS/PING DISPLAY
+-- FPS/PING DISPLAY (DI PARENT KE FPSScreenGui)
 local function CreateFPSPingDisplay()
     FPSPingFrame = Instance.new("Frame")
     FPSPingFrame.Size = UDim2.new(0, 130, 0, 55)
@@ -342,7 +348,7 @@ local function CreateFPSPingDisplay()
     FPSPingFrame.BorderSizePixel = 2
     FPSPingFrame.ZIndex = 90
     FPSPingFrame.Visible = FPSPingEnabled
-    FPSPingFrame.Parent = ScreenGui
+    FPSPingFrame.Parent = FPSScreenGui
     
     local FPSFrameCorner = Instance.new("UICorner")
     FPSFrameCorner.CornerRadius = UDim.new(0, 6)
@@ -407,19 +413,16 @@ local function UpdateFPSPing()
             frameCount = 0
             lastTime = currentTime
             
-            -- Get Ping
             pcall(function()
                 PingValue = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
             end)
             
-            -- Update display
             if FPSPingFrame then
                 local fpsLabel = FPSPingFrame:FindFirstChild("FPSLabel")
                 local pingLabel = FPSPingFrame:FindFirstChild("PingLabel")
                 
                 if fpsLabel then
                     fpsLabel.Text = "> FPS: " .. FPSValue
-                    -- Color based on FPS
                     if FPSValue >= 50 then
                         fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
                     elseif FPSValue >= 30 then
@@ -431,7 +434,6 @@ local function UpdateFPSPing()
                 
                 if pingLabel then
                     pingLabel.Text = "> PING: " .. PingValue .. "ms"
-                    -- Color based on Ping
                     if PingValue <= 100 then
                         pingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
                     elseif PingValue <= 200 then
@@ -1604,7 +1606,7 @@ VPNInfoLabel.TextXAlignment = Enum.TextXAlignment.Left
 VPNInfoLabel.ZIndex = 13
 VPNInfoLabel.Parent = UserInfoFrame
 
--- Update User Info periodically (for DisplayName changes)
+-- Update User Info periodically
 task.spawn(function()
     while task.wait(1) do
         if NameInfoLabel then
