@@ -1,10 +1,11 @@
 --[[
     ZetGames-AimLock | Premium Edition v3.8
     Theme: Blue & Black Hacker Style
-    System: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info
+    System: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam
     Login: Key System (5 KEYS)
-    Features: Loading Screen, Compact Mobile UI, Separated Sections, Night Lock, Full ESP, FPS Boost, Rainbow ESP, Fullbright, Enhanced Aimbot, User Info
+    Features: Loading Screen, Compact Mobile UI, Separated Sections, Full ESP, FPS Boost, Rainbow ESP, Fullbright, Enhanced Aimbot, User Info, Chat Spam
     Mobile Friendly - 100% Tested - ALL FEATURES WORKING - NO BUG
+    NOTE: Night Lock DIHAPUS untuk versi testing ini
 --]]
 
 -- Services
@@ -14,6 +15,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Camera = workspace.CurrentCamera
 
 local LocalPlayer = Players.LocalPlayer
@@ -63,6 +65,12 @@ local TracerColorName = "MERAH"
 local FullbrightEnabled = false
 local OriginalLighting = {}
 
+-- CHAT SPAM
+local ChatSpamEnabled = false
+local ChatSpamConnection = nil
+local ChatSpamText = "ZETGAMES-AIMLOCK ON TOP!"
+local ChatSpamDelay = 3
+
 -- TELEPORT
 local TeleportTargetList = {}
 
@@ -97,15 +105,6 @@ local ValidKeys = {
 }
 
 local KeyWebsite = "https://arkaraffaza387-dotcom.github.io/Key-Zero/"
-
--- NIGHT LOCK
-local function IsNightLockActive()
-    local hour = tonumber(os.date("%H", os.time()))
-    if hour >= 23 or hour < 3 then
-        return true
-    end
-    return false
-end
 
 -- ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -169,47 +168,6 @@ local function Notify(title, message, duration)
         TweenOut:Play()
         TweenOut.Completed:Connect(function()
             Notif:Destroy()
-        end)
-    end)
-end
-
--- KICK FUNCTION
-local function KickPlayer(text)
-    local KickOverlay = Instance.new("Frame")
-    KickOverlay.Size = UDim2.new(1, 0, 1, 0)
-    KickOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    KickOverlay.BackgroundTransparency = 0.3
-    KickOverlay.ZIndex = 200
-    KickOverlay.Parent = ScreenGui
-    
-    local KickFrame = Instance.new("Frame")
-    KickFrame.Size = UDim2.new(0, 350, 0, 100)
-    KickFrame.Position = UDim2.new(0.5, -175, 0.5, -50)
-    KickFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    KickFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
-    KickFrame.BorderSizePixel = 3
-    KickFrame.ZIndex = 201
-    KickFrame.Parent = KickOverlay
-    
-    local KickCorner = Instance.new("UICorner")
-    KickCorner.CornerRadius = UDim.new(0, 12)
-    KickCorner.Parent = KickFrame
-    
-    local KickText = Instance.new("TextLabel")
-    KickText.Size = UDim2.new(1, -30, 1, 0)
-    KickText.Position = UDim2.new(0, 15, 0, 0)
-    KickText.BackgroundTransparency = 1
-    KickText.Text = text
-    KickText.TextColor3 = Color3.fromRGB(255, 0, 0)
-    KickText.Font = Enum.Font.Code
-    KickText.TextSize = 18
-    KickText.ZIndex = 202
-    KickText.Parent = KickFrame
-    
-    task.spawn(function()
-        task.wait(2)
-        pcall(function()
-            LocalPlayer:Kick(text)
         end)
     end)
 end
@@ -321,6 +279,54 @@ local function DisableRainbowESP()
     if RainbowConnection then
         RainbowConnection:Disconnect()
         RainbowConnection = nil
+    end
+end
+
+-- CHAT SPAM
+local function SendChatMessage(message)
+    pcall(function()
+        local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvents then
+            local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+            if sayMessageRequest then
+                sayMessageRequest:FireServer(message, "All")
+                return true
+            end
+        end
+        
+        local textChatService = game:GetService("TextChatService")
+        if textChatService then
+            local textChannels = textChatService:FindFirstChild("TextChannels")
+            if textChannels then
+                local general = textChannels:FindFirstChild("RBXGeneral")
+                if general then
+                    general:SendAsync(message)
+                    return true
+                end
+            end
+        end
+    end)
+    return false
+end
+
+local function EnableChatSpam()
+    if ChatSpamConnection then
+        ChatSpamConnection = nil
+    end
+    
+    ChatSpamConnection = task.spawn(function()
+        while ChatSpamEnabled do
+            task.wait(ChatSpamDelay)
+            if ChatSpamEnabled then
+                SendChatMessage(ChatSpamText)
+            end
+        end
+    end)
+end
+
+local function DisableChatSpam()
+    if ChatSpamConnection then
+        ChatSpamConnection = nil
     end
 end
 
@@ -1187,10 +1193,10 @@ local loadingMessages = {
     "> DECRYPTING DATA...",
     "> INITIALIZING FULL ESP...",
     "> INITIALIZING ENHANCED AIMBOT...",
+    "> LOADING CHAT SPAM...",
     "> LOADING FULLBRIGHT...",
     "> LOADING RAINBOW ESP...",
     "> LOADING TELEPORT...",
-    "> LOADING SPEED HACK...",
     "> SYSTEM READY..."
 }
 
@@ -1394,12 +1400,12 @@ ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 8
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2000)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2400)
 ScrollFrame.ZIndex = 11
 ScrollFrame.Parent = MainHub
 
 local ScrollContent = Instance.new("Frame")
-ScrollContent.Size = UDim2.new(1, 0, 0, 2000)
+ScrollContent.Size = UDim2.new(1, 0, 0, 2400)
 ScrollContent.BackgroundTransparency = 1
 ScrollContent.ZIndex = 11
 ScrollContent.Parent = ScrollFrame
@@ -1599,14 +1605,123 @@ NoclipToggle.Parent = ScrollContent
 
 local NoclipCorner = Instance.new("UICorner")
 NoclipCorner.CornerRadius = UDim.new(0, 4)
-NoclipCorner.Parent = NoclipToggle
+NoclipCorner.Parent = NoclipToggle-- === CHAT SPAM ===
+CreateSection("=== CHAT SPAM ===", 510)
+
+local ChatSpamToggle = Instance.new("TextButton")
+ChatSpamToggle.Size = UDim2.new(1, -20, 0, 45)
+ChatSpamToggle.Position = UDim2.new(0, 10, 0, 540)
+ChatSpamToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+ChatSpamToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
+ChatSpamToggle.BorderSizePixel = 2
+ChatSpamToggle.Text = "> CHAT SPAM: OFF"
+ChatSpamToggle.TextColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamToggle.Font = Enum.Font.Code
+ChatSpamToggle.TextSize = 13
+ChatSpamToggle.ZIndex = 12
+ChatSpamToggle.Parent = ScrollContent
+
+local ChatSpamCorner = Instance.new("UICorner")
+ChatSpamCorner.CornerRadius = UDim.new(0, 4)
+ChatSpamCorner.Parent = ChatSpamToggle
+
+local ChatSpamTextLabel = Instance.new("TextLabel")
+ChatSpamTextLabel.Size = UDim2.new(1, -20, 0, 20)
+ChatSpamTextLabel.Position = UDim2.new(0, 10, 0, 590)
+ChatSpamTextLabel.BackgroundTransparency = 1
+ChatSpamTextLabel.Text = "> MESSAGE:"
+ChatSpamTextLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamTextLabel.Font = Enum.Font.Code
+ChatSpamTextLabel.TextSize = 11
+ChatSpamTextLabel.TextXAlignment = Enum.TextXAlignment.Left
+ChatSpamTextLabel.ZIndex = 12
+ChatSpamTextLabel.Parent = ScrollContent
+
+local ChatSpamTextInput = Instance.new("TextBox")
+ChatSpamTextInput.Size = UDim2.new(1, -20, 0, 35)
+ChatSpamTextInput.Position = UDim2.new(0, 10, 0, 615)
+ChatSpamTextInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+ChatSpamTextInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
+ChatSpamTextInput.BorderSizePixel = 1
+ChatSpamTextInput.PlaceholderText = "> Type message to spam..."
+ChatSpamTextInput.PlaceholderColor3 = Color3.fromRGB(60, 80, 100)
+ChatSpamTextInput.Text = ChatSpamText
+ChatSpamTextInput.TextColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamTextInput.Font = Enum.Font.Code
+ChatSpamTextInput.TextSize = 11
+ChatSpamTextInput.ZIndex = 12
+ChatSpamTextInput.Parent = ScrollContent
+
+local ChatSpamTextCorner = Instance.new("UICorner")
+ChatSpamTextCorner.CornerRadius = UDim.new(0, 4)
+ChatSpamTextCorner.Parent = ChatSpamTextInput
+
+local ChatSpamDelayLabel = Instance.new("TextLabel")
+ChatSpamDelayLabel.Size = UDim2.new(1, -20, 0, 20)
+ChatSpamDelayLabel.Position = UDim2.new(0, 10, 0, 655)
+ChatSpamDelayLabel.BackgroundTransparency = 1
+ChatSpamDelayLabel.Text = "> DELAY (SECONDS):"
+ChatSpamDelayLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamDelayLabel.Font = Enum.Font.Code
+ChatSpamDelayLabel.TextSize = 11
+ChatSpamDelayLabel.TextXAlignment = Enum.TextXAlignment.Left
+ChatSpamDelayLabel.ZIndex = 12
+ChatSpamDelayLabel.Parent = ScrollContent
+
+local ChatSpamDelayInput = Instance.new("TextBox")
+ChatSpamDelayInput.Size = UDim2.new(1, -20, 0, 35)
+ChatSpamDelayInput.Position = UDim2.new(0, 10, 0, 680)
+ChatSpamDelayInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+ChatSpamDelayInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
+ChatSpamDelayInput.BorderSizePixel = 1
+ChatSpamDelayInput.PlaceholderText = "> Delay (1-10 sec)"
+ChatSpamDelayInput.PlaceholderColor3 = Color3.fromRGB(60, 80, 100)
+ChatSpamDelayInput.Text = tostring(ChatSpamDelay)
+ChatSpamDelayInput.TextColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamDelayInput.Font = Enum.Font.Code
+ChatSpamDelayInput.TextSize = 11
+ChatSpamDelayInput.ZIndex = 12
+ChatSpamDelayInput.Parent = ScrollContent
+
+local ChatSpamDelayCorner = Instance.new("UICorner")
+ChatSpamDelayCorner.CornerRadius = UDim.new(0, 4)
+ChatSpamDelayCorner.Parent = ChatSpamDelayInput
+
+local ChatSpamSendOnceBtn = Instance.new("TextButton")
+ChatSpamSendOnceBtn.Size = UDim2.new(1, -20, 0, 35)
+ChatSpamSendOnceBtn.Position = UDim2.new(0, 10, 0, 720)
+ChatSpamSendOnceBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+ChatSpamSendOnceBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamSendOnceBtn.BorderSizePixel = 1
+ChatSpamSendOnceBtn.Text = "> SEND ONCE"
+ChatSpamSendOnceBtn.TextColor3 = Color3.fromRGB(0, 180, 255)
+ChatSpamSendOnceBtn.Font = Enum.Font.Code
+ChatSpamSendOnceBtn.TextSize = 11
+ChatSpamSendOnceBtn.ZIndex = 12
+ChatSpamSendOnceBtn.Parent = ScrollContent
+
+local ChatSpamSendOnceCorner = Instance.new("UICorner")
+ChatSpamSendOnceCorner.CornerRadius = UDim.new(0, 4)
+ChatSpamSendOnceCorner.Parent = ChatSpamSendOnceBtn
+
+local ChatSpamInfoLabel = Instance.new("TextLabel")
+ChatSpamInfoLabel.Size = UDim2.new(1, -20, 0, 40)
+ChatSpamInfoLabel.Position = UDim2.new(0, 10, 0, 760)
+ChatSpamInfoLabel.BackgroundTransparency = 1
+ChatSpamInfoLabel.Text = "> Spam chat otomatis\n> Bisa di-toggle ON/OFF"
+ChatSpamInfoLabel.TextColor3 = Color3.fromRGB(0, 130, 255)
+ChatSpamInfoLabel.Font = Enum.Font.Code
+ChatSpamInfoLabel.TextSize = 9
+ChatSpamInfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+ChatSpamInfoLabel.ZIndex = 12
+ChatSpamInfoLabel.Parent = ScrollContent
 
 -- === ENHANCED AIMBOT ===
-CreateSection("=== ENHANCED AIMBOT ===", 510)
+CreateSection("=== ENHANCED AIMBOT ===", 815)
 
 local AimbotToggle = Instance.new("TextButton")
 AimbotToggle.Size = UDim2.new(1, -20, 0, 45)
-AimbotToggle.Position = UDim2.new(0, 10, 0, 540)
+AimbotToggle.Position = UDim2.new(0, 10, 0, 845)
 AimbotToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 AimbotToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 AimbotToggle.BorderSizePixel = 2
@@ -1623,7 +1738,7 @@ AimbotCorner.Parent = AimbotToggle
 
 local AimbotModeLabel = Instance.new("TextLabel")
 AimbotModeLabel.Size = UDim2.new(1, -20, 0, 20)
-AimbotModeLabel.Position = UDim2.new(0, 10, 0, 590)
+AimbotModeLabel.Position = UDim2.new(0, 10, 0, 895)
 AimbotModeLabel.BackgroundTransparency = 1
 AimbotModeLabel.Text = "> AIMBOT MODE: ACCURATE"
 AimbotModeLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1635,7 +1750,7 @@ AimbotModeLabel.Parent = ScrollContent
 
 local AimbotModeButtons = Instance.new("Frame")
 AimbotModeButtons.Size = UDim2.new(1, -20, 0, 35)
-AimbotModeButtons.Position = UDim2.new(0, 10, 0, 615)
+AimbotModeButtons.Position = UDim2.new(0, 10, 0, 920)
 AimbotModeButtons.BackgroundTransparency = 1
 AimbotModeButtons.ZIndex = 12
 AimbotModeButtons.Parent = ScrollContent
@@ -1671,7 +1786,7 @@ CreateAimbotModeButton("INSTANT", "Instant", 0.69)
 
 local PredictionToggle = Instance.new("TextButton")
 PredictionToggle.Size = UDim2.new(1, -20, 0, 40)
-PredictionToggle.Position = UDim2.new(0, 10, 0, 660)
+PredictionToggle.Position = UDim2.new(0, 10, 0, 965)
 PredictionToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 PredictionToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 PredictionToggle.BorderSizePixel = 1
@@ -1688,7 +1803,7 @@ PredictionCorner.Parent = PredictionToggle
 
 local PredictionInput = Instance.new("TextBox")
 PredictionInput.Size = UDim2.new(1, -20, 0, 35)
-PredictionInput.Position = UDim2.new(0, 10, 0, 705)
+PredictionInput.Position = UDim2.new(0, 10, 0, 1010)
 PredictionInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 PredictionInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 PredictionInput.BorderSizePixel = 1
@@ -1707,7 +1822,7 @@ PredictionInputCorner.Parent = PredictionInput
 
 local WallCheckToggle = Instance.new("TextButton")
 WallCheckToggle.Size = UDim2.new(1, -20, 0, 40)
-WallCheckToggle.Position = UDim2.new(0, 10, 0, 745)
+WallCheckToggle.Position = UDim2.new(0, 10, 0, 1050)
 WallCheckToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 WallCheckToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 WallCheckToggle.BorderSizePixel = 1
@@ -1724,7 +1839,7 @@ WallCheckCorner.Parent = WallCheckToggle
 
 local TeamCheckToggle = Instance.new("TextButton")
 TeamCheckToggle.Size = UDim2.new(1, -20, 0, 40)
-TeamCheckToggle.Position = UDim2.new(0, 10, 0, 790)
+TeamCheckToggle.Position = UDim2.new(0, 10, 0, 1095)
 TeamCheckToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 TeamCheckToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 TeamCheckToggle.BorderSizePixel = 1
@@ -1741,7 +1856,7 @@ TeamCheckCorner.Parent = TeamCheckToggle
 
 local TargetLabel = Instance.new("TextLabel")
 TargetLabel.Size = UDim2.new(1, -20, 0, 20)
-TargetLabel.Position = UDim2.new(0, 10, 0, 835)
+TargetLabel.Position = UDim2.new(0, 10, 0, 1140)
 TargetLabel.BackgroundTransparency = 1
 TargetLabel.Text = "> TARGET_PART: HEAD"
 TargetLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1753,7 +1868,7 @@ TargetLabel.Parent = ScrollContent
 
 local TargetButtons = Instance.new("Frame")
 TargetButtons.Size = UDim2.new(1, -20, 0, 35)
-TargetButtons.Position = UDim2.new(0, 10, 0, 860)
+TargetButtons.Position = UDim2.new(0, 10, 0, 1165)
 TargetButtons.BackgroundTransparency = 1
 TargetButtons.ZIndex = 12
 TargetButtons.Parent = ScrollContent
@@ -1787,11 +1902,11 @@ CreateTargetButton("Torso", "HumanoidRootPart", 0.37)
 CreateTargetButton("Body", "UpperTorso", 0.74)
 
 -- === FULL ESP ===
-CreateSection("=== FULL ESP FEATURES ===", 905)
+CreateSection("=== FULL ESP FEATURES ===", 1210)
 
 local ESPToggle = Instance.new("TextButton")
 ESPToggle.Size = UDim2.new(1, -20, 0, 40)
-ESPToggle.Position = UDim2.new(0, 10, 0, 935)
+ESPToggle.Position = UDim2.new(0, 10, 0, 1240)
 ESPToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPToggle.BorderSizePixel = 1
@@ -1808,7 +1923,7 @@ ESPCorner.Parent = ESPToggle
 
 local RainbowESPToggle = Instance.new("TextButton")
 RainbowESPToggle.Size = UDim2.new(1, -20, 0, 40)
-RainbowESPToggle.Position = UDim2.new(0, 10, 0, 980)
+RainbowESPToggle.Position = UDim2.new(0, 10, 0, 1285)
 RainbowESPToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 RainbowESPToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 RainbowESPToggle.BorderSizePixel = 2
@@ -1825,7 +1940,7 @@ RainbowESPCorner.Parent = RainbowESPToggle
 
 local ESPBoxToggle = Instance.new("TextButton")
 ESPBoxToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPBoxToggle.Position = UDim2.new(0, 10, 0, 1025)
+ESPBoxToggle.Position = UDim2.new(0, 10, 0, 1330)
 ESPBoxToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPBoxToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPBoxToggle.BorderSizePixel = 1
@@ -1842,7 +1957,7 @@ ESPBoxCorner.Parent = ESPBoxToggle
 
 local ESPNameToggle = Instance.new("TextButton")
 ESPNameToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPNameToggle.Position = UDim2.new(0.52, 5, 0, 1025)
+ESPNameToggle.Position = UDim2.new(0.52, 5, 0, 1330)
 ESPNameToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPNameToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPNameToggle.BorderSizePixel = 1
@@ -1859,7 +1974,7 @@ ESPNameCorner.Parent = ESPNameToggle
 
 local ESPDistanceToggle = Instance.new("TextButton")
 ESPDistanceToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPDistanceToggle.Position = UDim2.new(0, 10, 0, 1065)
+ESPDistanceToggle.Position = UDim2.new(0, 10, 0, 1370)
 ESPDistanceToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPDistanceToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPDistanceToggle.BorderSizePixel = 1
@@ -1876,7 +1991,7 @@ ESPDistanceCorner.Parent = ESPDistanceToggle
 
 local ESPHealthToggle = Instance.new("TextButton")
 ESPHealthToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPHealthToggle.Position = UDim2.new(0.52, 5, 0, 1065)
+ESPHealthToggle.Position = UDim2.new(0.52, 5, 0, 1370)
 ESPHealthToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPHealthToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPHealthToggle.BorderSizePixel = 1
@@ -1893,7 +2008,7 @@ ESPHealthCorner.Parent = ESPHealthToggle
 
 local ESPSkeletonToggle = Instance.new("TextButton")
 ESPSkeletonToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPSkeletonToggle.Position = UDim2.new(0, 10, 0, 1105)
+ESPSkeletonToggle.Position = UDim2.new(0, 10, 0, 1410)
 ESPSkeletonToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPSkeletonToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPSkeletonToggle.BorderSizePixel = 1
@@ -1910,7 +2025,7 @@ ESPSkeletonCorner.Parent = ESPSkeletonToggle
 
 local ESPHeadDotToggle = Instance.new("TextButton")
 ESPHeadDotToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPHeadDotToggle.Position = UDim2.new(0.52, 5, 0, 1105)
+ESPHeadDotToggle.Position = UDim2.new(0.52, 5, 0, 1410)
 ESPHeadDotToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPHeadDotToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPHeadDotToggle.BorderSizePixel = 1
@@ -1927,7 +2042,7 @@ ESPHeadDotCorner.Parent = ESPHeadDotToggle
 
 local ESPChamsToggle = Instance.new("TextButton")
 ESPChamsToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPChamsToggle.Position = UDim2.new(0, 10, 0, 1145)
+ESPChamsToggle.Position = UDim2.new(0, 10, 0, 1450)
 ESPChamsToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ESPChamsToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 ESPChamsToggle.BorderSizePixel = 1
@@ -1944,7 +2059,7 @@ ESPChamsCorner.Parent = ESPChamsToggle
 
 local ESPTracerToggle = Instance.new("TextButton")
 ESPTracerToggle.Size = UDim2.new(0.48, -15, 0, 35)
-ESPTracerToggle.Position = UDim2.new(0.52, 5, 0, 1145)
+ESPTracerToggle.Position = UDim2.new(0.52, 5, 0, 1450)
 ESPTracerToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 ESPTracerToggle.BorderColor3 = Color3.fromRGB(0, 180, 255)
 ESPTracerToggle.BorderSizePixel = 1
@@ -1961,7 +2076,7 @@ ESPTracerCorner.Parent = ESPTracerToggle
 
 local TracerColorLabel = Instance.new("TextLabel")
 TracerColorLabel.Size = UDim2.new(1, -20, 0, 20)
-TracerColorLabel.Position = UDim2.new(0, 10, 0, 1190)
+TracerColorLabel.Position = UDim2.new(0, 10, 0, 1495)
 TracerColorLabel.BackgroundTransparency = 1
 TracerColorLabel.Text = "> TRACER COLOR: MERAH"
 TracerColorLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1973,7 +2088,7 @@ TracerColorLabel.Parent = ScrollContent
 
 local TracerColorButtons = Instance.new("Frame")
 TracerColorButtons.Size = UDim2.new(1, -20, 0, 40)
-TracerColorButtons.Position = UDim2.new(0, 10, 0, 1215)
+TracerColorButtons.Position = UDim2.new(0, 10, 0, 1520)
 TracerColorButtons.BackgroundTransparency = 1
 TracerColorButtons.ZIndex = 12
 TracerColorButtons.Parent = ScrollContent
@@ -2008,11 +2123,11 @@ CreateTracerColorButton("PUTIH", Color3.fromRGB(255, 255, 255), "PUTIH", 0.345, 
 CreateTracerColorButton("HITAM", Color3.fromRGB(0, 0, 0), "HITAM", 0.69, 0)
 
 -- === TELEPORT ===
-CreateSection("=== TELEPORT (UNLOCKED) ===", 1280)
+CreateSection("=== TELEPORT (UNLOCKED) ===", 1585)
 
 local TeleportMouseBtn = Instance.new("TextButton")
 TeleportMouseBtn.Size = UDim2.new(1, -20, 0, 40)
-TeleportMouseBtn.Position = UDim2.new(0, 10, 0, 1310)
+TeleportMouseBtn.Position = UDim2.new(0, 10, 0, 1615)
 TeleportMouseBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 TeleportMouseBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
 TeleportMouseBtn.BorderSizePixel = 1
@@ -2029,7 +2144,7 @@ TeleportMouseCorner.Parent = TeleportMouseBtn
 
 local SaveLocBtn = Instance.new("TextButton")
 SaveLocBtn.Size = UDim2.new(0.48, -15, 0, 40)
-SaveLocBtn.Position = UDim2.new(0, 10, 0, 1355)
+SaveLocBtn.Position = UDim2.new(0, 10, 0, 1660)
 SaveLocBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 SaveLocBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
 SaveLocBtn.BorderSizePixel = 1
@@ -2046,7 +2161,7 @@ SaveLocCorner.Parent = SaveLocBtn
 
 local LoadLocBtn = Instance.new("TextButton")
 LoadLocBtn.Size = UDim2.new(0.48, -15, 0, 40)
-LoadLocBtn.Position = UDim2.new(0.52, 5, 0, 1355)
+LoadLocBtn.Position = UDim2.new(0.52, 5, 0, 1660)
 LoadLocBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
 LoadLocBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
 LoadLocBtn.BorderSizePixel = 1
@@ -2063,7 +2178,7 @@ LoadLocCorner.Parent = LoadLocBtn
 
 local TeleportListLabel = Instance.new("TextLabel")
 TeleportListLabel.Size = UDim2.new(1, -20, 0, 20)
-TeleportListLabel.Position = UDim2.new(0, 10, 0, 1400)
+TeleportListLabel.Position = UDim2.new(0, 10, 0, 1705)
 TeleportListLabel.BackgroundTransparency = 1
 TeleportListLabel.Text = "> PLAYERS (CLICK TO TELEPORT):"
 TeleportListLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -2075,7 +2190,7 @@ TeleportListLabel.Parent = ScrollContent
 
 local TeleportListFrame = Instance.new("ScrollingFrame")
 TeleportListFrame.Size = UDim2.new(1, -20, 0, 120)
-TeleportListFrame.Position = UDim2.new(0, 10, 0, 1425)
+TeleportListFrame.Position = UDim2.new(0, 10, 0, 1730)
 TeleportListFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
 TeleportListFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
 TeleportListFrame.BorderSizePixel = 1
@@ -2090,11 +2205,11 @@ TeleportListCorner.CornerRadius = UDim.new(0, 4)
 TeleportListCorner.Parent = TeleportListFrame
 
 -- === VISUAL ===
-CreateSection("=== VISUAL FEATURES ===", 1560)
+CreateSection("=== VISUAL FEATURES ===", 1865)
 
 local FOVToggle = Instance.new("TextButton")
 FOVToggle.Size = UDim2.new(1, -20, 0, 40)
-FOVToggle.Position = UDim2.new(0, 10, 0, 1590)
+FOVToggle.Position = UDim2.new(0, 10, 0, 1895)
 FOVToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 FOVToggle.BorderColor3 = Color3.fromRGB(0, 150, 255)
 FOVToggle.BorderSizePixel = 1
@@ -2111,7 +2226,7 @@ FOVCorner.Parent = FOVToggle
 
 local FOVInput = Instance.new("TextBox")
 FOVInput.Size = UDim2.new(1, -20, 0, 35)
-FOVInput.Position = UDim2.new(0, 10, 0, 1635)
+FOVInput.Position = UDim2.new(0, 10, 0, 1940)
 FOVInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 FOVInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 FOVInput.BorderSizePixel = 1
@@ -2130,7 +2245,7 @@ FOVInputCorner.Parent = FOVInput
 
 local SmoothInput = Instance.new("TextBox")
 SmoothInput.Size = UDim2.new(1, -20, 0, 35)
-SmoothInput.Position = UDim2.new(0, 10, 0, 1675)
+SmoothInput.Position = UDim2.new(0, 10, 0, 1980)
 SmoothInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 SmoothInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
 SmoothInput.BorderSizePixel = 1
@@ -2199,13 +2314,10 @@ task.spawn(function()
     task.wait(0.5)
     LoadingScreen.Visible = false
     
-    if IsNightLockActive() then
-        KickPlayer("* TIDUR UNTUK KESEHATAN MU *")
-    else
-        LoginFrame.Visible = true
-        Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
-        Notify("Login", "> ENTER ACCESS KEY", 3)
-    end
+    -- Night Lock DIHAPUS - langsung tampil login
+    LoginFrame.Visible = true
+    Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
+    Notify("Login", "> ENTER ACCESS KEY", 3)
 end)
 
 -- Auto Update Teleport List
@@ -2340,6 +2452,52 @@ NoclipToggle.MouseButton1Click:Connect(function()
         NoclipToggle.Text = "> NOCLIP: OFF"
         NoclipToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
         DisableNoclip()
+    end
+end)
+
+ChatSpamToggle.MouseButton1Click:Connect(function()
+    ChatSpamEnabled = not ChatSpamEnabled
+    if ChatSpamEnabled then
+        ChatSpamToggle.Text = "> CHAT SPAM: ON"
+        ChatSpamToggle.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+        EnableChatSpam()
+        Notify("Chat Spam", "> ENABLED", 2)
+    else
+        ChatSpamToggle.Text = "> CHAT SPAM: OFF"
+        ChatSpamToggle.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+        DisableChatSpam()
+        Notify("Chat Spam", "> DISABLED", 2)
+    end
+end)
+
+ChatSpamTextInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        if ChatSpamTextInput.Text ~= "" then
+            ChatSpamText = ChatSpamTextInput.Text
+            Notify("Chat Spam", "> MESSAGE SET", 2)
+        end
+    end
+end)
+
+ChatSpamDelayInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newDelay = tonumber(ChatSpamDelayInput.Text)
+        if newDelay then
+            ChatSpamDelay = math.clamp(newDelay, 1, 10)
+            ChatSpamDelayInput.Text = tostring(ChatSpamDelay)
+            Notify("Chat Spam", "> DELAY: " .. ChatSpamDelay .. "s", 2)
+        else
+            ChatSpamDelayInput.Text = tostring(ChatSpamDelay)
+        end
+    end
+end)
+
+ChatSpamSendOnceBtn.MouseButton1Click:Connect(function()
+    if ChatSpamText and ChatSpamText ~= "" then
+        SendChatMessage(ChatSpamText)
+        Notify("Chat Spam", "> SENT", 2)
+    else
+        Notify("Chat Spam", "> NO MESSAGE", 2)
     end
 end)
 
