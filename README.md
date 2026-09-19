@@ -1,7 +1,7 @@
 --[[
     ZetGames-AimLock | Premium Edition v3.8
     Theme: Blue & Black Hacker Style
-    System: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + FPS/Ping Display + User Info
+    System: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + FPS/Ping Display (Top Right) + User Info
     Login: Key System (5 KEYS)
     Features: Loading Screen, Compact Mobile UI, Separated Sections, Night Lock, Full ESP, FPS Boost, Rainbow ESP, Fullbright, Enhanced Aimbot, FPS/Ping Display, User Info
     Mobile Friendly - 100% Tested - ALL FEATURES WORKING - NO BUG
@@ -70,12 +70,6 @@ local FPSPingFrame = nil
 local FPSValue = 0
 local PingValue = 0
 local FPSUpdateConnection = nil
-
--- SEPARATE SCREEN GUI FOR FPS/PING (biar gak nutupin menu utama)
-local FPSScreenGui = Instance.new("ScreenGui")
-FPSScreenGui.Name = "ZetGamesFPSDisplay"
-FPSScreenGui.ResetOnSpawn = false
-FPSScreenGui.Parent = game:GetService("CoreGui")
 
 -- TELEPORT
 local TeleportTargetList = {}
@@ -338,17 +332,17 @@ local function DisableRainbowESP()
     end
 end
 
--- FPS/PING DISPLAY (DI PARENT KE FPSScreenGui)
+-- FPS/PING DISPLAY (DI KANAN ATAS LAYAR)
 local function CreateFPSPingDisplay()
     FPSPingFrame = Instance.new("Frame")
     FPSPingFrame.Size = UDim2.new(0, 130, 0, 55)
-    FPSPingFrame.Position = UDim2.new(0, 10, 0, 60)
+    FPSPingFrame.Position = UDim2.new(1, -140, 0, 10) -- Kanan atas
     FPSPingFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
     FPSPingFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
     FPSPingFrame.BorderSizePixel = 2
     FPSPingFrame.ZIndex = 90
     FPSPingFrame.Visible = FPSPingEnabled
-    FPSPingFrame.Parent = FPSScreenGui
+    FPSPingFrame.Parent = ScreenGui
     
     local FPSFrameCorner = Instance.new("UICorner")
     FPSFrameCorner.CornerRadius = UDim.new(0, 6)
@@ -1606,7 +1600,6 @@ VPNInfoLabel.TextXAlignment = Enum.TextXAlignment.Left
 VPNInfoLabel.ZIndex = 13
 VPNInfoLabel.Parent = UserInfoFrame
 
--- Update User Info periodically
 task.spawn(function()
     while task.wait(1) do
         if NameInfoLabel then
@@ -2340,6 +2333,13 @@ task.spawn(function()
     task.wait(0.5)
     LoadingScreen.Visible = false
     
+    -- Buat FPS/Ping Display SETELAH loading
+    CreateFPSPingDisplay()
+    UpdateFPSPing()
+    if FPSPingFrame then
+        MakeDraggable(FPSPingFrame)
+    end
+    
     if IsNightLockActive() then
         KickPlayer("* TIDUR UNTUK KESEHATAN MU *")
     else
@@ -2786,8 +2786,3 @@ end
 MakeDraggable(LoginFrame)
 MakeDraggable(MainHub)
 MakeDraggable(ToggleMenuButton)
-MakeDraggable(FPSPingFrame)
-
--- Initialize FPS/Ping Display
-CreateFPSPingDisplay()
-UpdateFPSPing()
