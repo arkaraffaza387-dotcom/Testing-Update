@@ -1,8 +1,8 @@
 --[[
-    ZetGames-AimLock | Premium Edition v3.8
-    Theme: Blue & Black Hacker Style
-    Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam + Sound ESP (FIXED) + Music Player + Night Lock
-    Night Lock: 23:00 - 03:00 (Kick dengan pesan TIDUR)
+    ZetGames-AimLock-Advanserver | TESTING BUILD
+    Theme: Red & Black Hacker Style
+    Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam + Sound ESP + Music Player + Survival Features
+    Night Lock: REMOVED (Testing Build)
     All Toggles Working - NO BUG
 --]]
 
@@ -23,6 +23,23 @@ local Camera = workspace.CurrentCamera
 
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
+
+--==============================================================
+-- THEME COLORS (RED & BLACK)
+--==============================================================
+local THEME = {
+    MainBG = Color3.fromRGB(10, 10, 10),
+    PanelBG = Color3.fromRGB(15, 15, 15),
+    SectionBG = Color3.fromRGB(40, 0, 0),
+    AccentColor = Color3.fromRGB(255, 0, 0),
+    AccentLight = Color3.fromRGB(255, 80, 80),
+    AccentDark = Color3.fromRGB(150, 0, 0),
+    ButtonBG = Color3.fromRGB(25, 25, 25),
+    ButtonActive = Color3.fromRGB(100, 0, 0),
+    TextColor = Color3.fromRGB(255, 0, 0),
+    TextLight = Color3.fromRGB(255, 100, 100),
+    SuccessColor = Color3.fromRGB(255, 50, 50),
+}
 
 --==============================================================
 -- VARIABLES
@@ -66,10 +83,10 @@ local FullbrightEnabled = false
 local OriginalLighting = {}
 
 local ChatSpamEnabled = false
-local ChatSpamText = "ZETGAMES-AIMLOCK ON TOP!"
+local ChatSpamText = "ZETGAMES-AIMLOCK-ADVANSERVER"
 local ChatSpamDelay = 3
 
--- SOUND ESP (FIXED)
+-- SOUND ESP
 local SoundESPEnabled = false
 local SoundESPRadius = 100
 local SoundESPConnection = nil
@@ -83,19 +100,12 @@ local MusicSound = nil
 local MusicID = "1837879082"
 local MusicVolume = 1
 
--- FITUR UNIK BARU - Auto Respawn
+-- SURVIVAL FEATURES
 local AutoRespawnEnabled = false
 local AutoRespawnConnection = nil
-
--- FITUR UNIK BARU - Void Protection
 local VoidProtectEnabled = false
 local VoidProtectConnection = nil
-
--- FITUR UNIK BARU - Look At Player
 local LookAtEnabled = false
-local LookAtTarget = nil
-
--- FITUR UNIK BARU - Anti-Fling
 local AntiFlingEnabled = false
 local AntiFlingConnection = nil
 
@@ -131,66 +141,15 @@ local ValidKeys = {
 local KeyWebsite = "https://arkaraffaza387-dotcom.github.io/Key-Zero/"
 
 --==============================================================
--- NIGHT LOCK
---==============================================================
-local function IsNightLockActive()
-    local hour = tonumber(os.date("%H", os.time()))
-    if hour >= 23 or hour < 3 then
-        return true
-    end
-    return false
-end
-
---==============================================================
 -- SCREEN GUI
 --==============================================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ZetGamesAimLock"
+ScreenGui.Name = "ZetGamesAimLockAdvanserver"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
 --==============================================================
--- NIGHT KICK
---==============================================================
-local function NightKickPlayer()
-    local KickOverlay = Instance.new("Frame")
-    KickOverlay.Size = UDim2.new(1, 0, 1, 0)
-    KickOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    KickOverlay.BackgroundTransparency = 0.3
-    KickOverlay.ZIndex = 999
-    KickOverlay.Parent = ScreenGui
-
-    local KickFrame = Instance.new("Frame")
-    KickFrame.Size = UDim2.new(0, 350, 0, 100)
-    KickFrame.Position = UDim2.new(0.5, -175, 0.5, -50)
-    KickFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    KickFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
-    KickFrame.BorderSizePixel = 3
-    KickFrame.ZIndex = 1000
-    KickFrame.Parent = KickOverlay
-    Instance.new("UICorner", KickFrame).CornerRadius = UDim.new(0, 12)
-
-    local KickText = Instance.new("TextLabel")
-    KickText.Size = UDim2.new(1, -30, 1, 0)
-    KickText.Position = UDim2.new(0, 15, 0, 0)
-    KickText.BackgroundTransparency = 1
-    KickText.Text = "* TIDUR UNTUK KESEHATAN MU *"
-    KickText.TextColor3 = Color3.fromRGB(255, 0, 0)
-    KickText.Font = Enum.Font.Code
-    KickText.TextSize = 18
-    KickText.ZIndex = 1001
-    KickText.Parent = KickFrame
-
-    task.spawn(function()
-        task.wait(2)
-        pcall(function()
-            LocalPlayer:Kick("* TIDUR UNTUK KESEHATAN MU *")
-        end)
-    end)
-end
-
---==============================================================
--- NOTIFICATION
+-- NOTIFICATION (RED THEME)
 --==============================================================
 local Notifications = Instance.new("Frame")
 Notifications.Size = UDim2.new(0, 250, 1, 0)
@@ -204,8 +163,8 @@ local function Notify(title, message, duration)
     local Notif = Instance.new("Frame")
     Notif.Size = UDim2.new(1, 0, 0, 55)
     Notif.Position = UDim2.new(0, 0, 0, -55)
-    Notif.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    Notif.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    Notif.BackgroundColor3 = THEME.PanelBG
+    Notif.BorderColor3 = THEME.AccentColor
     Notif.BorderSizePixel = 2
     Notif.ZIndex = 501
     Notif.Parent = Notifications
@@ -216,7 +175,7 @@ local function Notify(title, message, duration)
     Title.Position = UDim2.new(0, 8, 0, 4)
     Title.BackgroundTransparency = 1
     Title.Text = title
-    Title.TextColor3 = Color3.fromRGB(0, 180, 255)
+    Title.TextColor3 = THEME.TextColor
     Title.Font = Enum.Font.Code
     Title.TextSize = 12
     Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -228,7 +187,7 @@ local function Notify(title, message, duration)
     Msg.Position = UDim2.new(0, 8, 0, 28)
     Msg.BackgroundTransparency = 1
     Msg.Text = message
-    Msg.TextColor3 = Color3.fromRGB(150, 200, 255)
+    Msg.TextColor3 = THEME.TextLight
     Msg.Font = Enum.Font.Code
     Msg.TextSize = 10
     Msg.TextXAlignment = Enum.TextXAlignment.Left
@@ -290,11 +249,9 @@ local function DisableFullbright()
     end)
 end
 
--- SOUND ESP (FIXED - DETEKSI SEMUA ARAH)
+-- SOUND ESP
 local function StartSoundESP()
-    if SoundESPBeep then
-        pcall(function() SoundESPBeep:Destroy() end)
-    end
+    if SoundESPBeep then pcall(function() SoundESPBeep:Destroy() end) end
     SoundESPBeep = Instance.new("Sound")
     SoundESPBeep.SoundId = SoundESPSoundID
     SoundESPBeep.Volume = 1
@@ -309,7 +266,6 @@ local function StartSoundESP()
         local myPos = LocalPlayer.Character.HumanoidRootPart.Position
         local nearestDist = math.huge
 
-        -- Loop SEMUA player buat cari yang paling deket
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer 
                 and player.Character 
@@ -318,18 +274,13 @@ local function StartSoundESP()
                 and player.Character.Humanoid.Health > 0 
             then
                 local d = (player.Character.HumanoidRootPart.Position - myPos).Magnitude
-                if d < nearestDist then
-                    nearestDist = d
-                end
+                if d < nearestDist then nearestDist = d end
             end
         end
 
-        -- Kalau ada musuh dalam radius → beep
         if nearestDist <= SoundESPRadius then
             local now = tick()
-            -- Cooldown: makin deket makin cepet
             local cooldown = math.clamp(nearestDist / 85, 0.15, 1.2)
-            
             if now - LastBeepTime >= cooldown then
                 LastBeepTime = now
                 pcall(function()
@@ -344,21 +295,13 @@ local function StartSoundESP()
 end
 
 local function StopSoundESP()
-    if SoundESPConnection then
-        SoundESPConnection:Disconnect()
-        SoundESPConnection = nil
-    end
-    if SoundESPBeep then
-        pcall(function() SoundESPBeep:Destroy() end)
-        SoundESPBeep = nil
-    end
+    if SoundESPConnection then SoundESPConnection:Disconnect(); SoundESPConnection = nil end
+    if SoundESPBeep then pcall(function() SoundESPBeep:Destroy() end); SoundESPBeep = nil end
 end
 
 -- MUSIC PLAYER
 local function StartMusic()
-    if MusicSound then
-        pcall(function() MusicSound:Destroy() end)
-    end
+    if MusicSound then pcall(function() MusicSound:Destroy() end) end
     MusicSound = Instance.new("Sound")
     MusicSound.SoundId = "rbxassetid://" .. MusicID
     MusicSound.Volume = MusicVolume
@@ -369,10 +312,7 @@ end
 
 local function StopMusic()
     if MusicSound then
-        pcall(function()
-            MusicSound:Stop()
-            MusicSound:Destroy()
-        end)
+        pcall(function() MusicSound:Stop(); MusicSound:Destroy() end)
         MusicSound = nil
     end
 end
@@ -381,9 +321,7 @@ local function UpdateMusic()
     if MusicSound then
         MusicSound.SoundId = "rbxassetid://" .. MusicID
         MusicSound.Volume = MusicVolume
-        if MusicPlayerEnabled then
-            pcall(function() MusicSound:Play() end)
-        end
+        if MusicPlayerEnabled then pcall(function() MusicSound:Play() end) end
     end
 end
 
@@ -395,22 +333,17 @@ local function StartAutoRespawn()
         if LocalPlayer.Character then
             local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
             if hum and hum.Health <= 0 then
-                pcall(function()
-                    LocalPlayer:LoadCharacter()
-                end)
+                pcall(function() LocalPlayer:LoadCharacter() end)
             end
         end
     end)
 end
 
 local function StopAutoRespawn()
-    if AutoRespawnConnection then
-        AutoRespawnConnection:Disconnect()
-        AutoRespawnConnection = nil
-    end
+    if AutoRespawnConnection then AutoRespawnConnection:Disconnect(); AutoRespawnConnection = nil end
 end
 
--- VOID PROTECTION
+-- VOID PROTECT
 local function StartVoidProtect()
     if VoidProtectConnection then VoidProtectConnection:Disconnect() end
     VoidProtectConnection = RunService.Heartbeat:Connect(function()
@@ -418,12 +351,9 @@ local function StartVoidProtect()
         if LocalPlayer.Character then
             local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if root and root.Position.Y < -100 then
-                -- Teleport ke spawn aman
                 local spawn = Workspace:FindFirstChildOfClass("SpawnLocation")
                 if spawn then
-                    pcall(function()
-                        root.CFrame = CFrame.new(spawn.Position + Vector3.new(0, 5, 0))
-                    end)
+                    pcall(function() root.CFrame = CFrame.new(spawn.Position + Vector3.new(0, 5, 0)) end)
                 end
             end
         end
@@ -431,10 +361,7 @@ local function StartVoidProtect()
 end
 
 local function StopVoidProtect()
-    if VoidProtectConnection then
-        VoidProtectConnection:Disconnect()
-        VoidProtectConnection = nil
-    end
+    if VoidProtectConnection then VoidProtectConnection:Disconnect(); VoidProtectConnection = nil end
 end
 
 -- ANTI-FLING
@@ -445,12 +372,9 @@ local function StartAntiFling()
         if LocalPlayer.Character then
             local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if root then
-                -- Cek kecepatan aneh
                 local vel = root.AssemblyLinearVelocity
                 if vel.Magnitude > 500 then
-                    pcall(function()
-                        root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    end)
+                    pcall(function() root.AssemblyLinearVelocity = Vector3.new(0, 0, 0) end)
                 end
             end
         end
@@ -458,10 +382,7 @@ local function StartAntiFling()
 end
 
 local function StopAntiFling()
-    if AntiFlingConnection then
-        AntiFlingConnection:Disconnect()
-        AntiFlingConnection = nil
-    end
+    if AntiFlingConnection then AntiFlingConnection:Disconnect(); AntiFlingConnection = nil end
 end
 
 -- RAINBOW
@@ -521,10 +442,7 @@ local function SendChatMessage(message)
         local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatEvents then
             local sayReq = chatEvents:FindFirstChild("SayMessageRequest")
-            if sayReq then
-                sayReq:FireServer(message, "All")
-                sent = true
-            end
+            if sayReq then sayReq:FireServer(message, "All"); sent = true end
         end
     end)
     if not sent then
@@ -532,10 +450,7 @@ local function SendChatMessage(message)
             local channels = TextChatService:FindFirstChild("TextChannels")
             if channels then
                 local gen = channels:FindFirstChild("RBXGeneral")
-                if gen then
-                    gen:SendAsync(message)
-                    sent = true
-                end
+                if gen then gen:SendAsync(message); sent = true end
             end
         end)
     end
@@ -566,9 +481,7 @@ local function EnableFPSBoost()
     Lighting.EnvironmentSpecularScale = 0
     Lighting.Outlines = false
     for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("PostEffect") then
-            pcall(function() effect.Enabled = false end)
-        end
+        if effect:IsA("PostEffect") then pcall(function() effect.Enabled = false end) end
     end
     for _, part in pairs(Workspace:GetDescendants()) do
         if part:IsA("ParticleEmitter") or part:IsA("Fire") or part:IsA("Smoke") or part:IsA("Sparkles") then
@@ -679,19 +592,19 @@ end
 local function CreateESP(player)
     if ESPObjects[player] then return end
     local d = {}
-    d.Box = Drawing.new("Square"); d.Box.Visible = false; d.Box.Color = Color3.fromRGB(0,180,255); d.Box.Thickness = 2; d.Box.Filled = false; d.Box.Transparency = 1
-    d.Name = Drawing.new("Text"); d.Name.Visible = false; d.Name.Color = Color3.fromRGB(0,180,255); d.Name.Size = 12; d.Name.Center = true; d.Name.Outline = true; d.Name.OutlineColor = Color3.fromRGB(0,0,0)
-    d.Distance = Drawing.new("Text"); d.Distance.Visible = false; d.Distance.Color = Color3.fromRGB(0,180,255); d.Distance.Size = 10; d.Distance.Center = true; d.Distance.Outline = true; d.Distance.OutlineColor = Color3.fromRGB(0,0,0)
-    d.HealthBg = Drawing.new("Line"); d.HealthBg.Visible = false; d.HealthBg.Color = Color3.fromRGB(255,0,0); d.HealthBg.Thickness = 3; d.HealthBg.Transparency = 1
-    d.HealthBar = Drawing.new("Line"); d.HealthBar.Visible = false; d.HealthBar.Color = Color3.fromRGB(0,180,255); d.HealthBar.Thickness = 3; d.HealthBar.Transparency = 1
+    d.Box = Drawing.new("Square"); d.Box.Visible = false; d.Box.Color = THEME.AccentColor; d.Box.Thickness = 2; d.Box.Filled = false; d.Box.Transparency = 1
+    d.Name = Drawing.new("Text"); d.Name.Visible = false; d.Name.Color = THEME.AccentColor; d.Name.Size = 12; d.Name.Center = true; d.Name.Outline = true; d.Name.OutlineColor = Color3.fromRGB(0,0,0)
+    d.Distance = Drawing.new("Text"); d.Distance.Visible = false; d.Distance.Color = THEME.AccentColor; d.Distance.Size = 10; d.Distance.Center = true; d.Distance.Outline = true; d.Distance.OutlineColor = Color3.fromRGB(0,0,0)
+    d.HealthBg = Drawing.new("Line"); d.HealthBg.Visible = false; d.HealthBg.Color = Color3.fromRGB(80,0,0); d.HealthBg.Thickness = 3; d.HealthBg.Transparency = 1
+    d.HealthBar = Drawing.new("Line"); d.HealthBar.Visible = false; d.HealthBar.Color = THEME.AccentColor; d.HealthBar.Thickness = 3; d.HealthBar.Transparency = 1
     d.Tracer = Drawing.new("Line"); d.Tracer.Visible = false; d.Tracer.Color = TracerColor; d.Tracer.Thickness = 2; d.Tracer.Transparency = 0.5
     d.HeadDot = Drawing.new("Circle"); d.HeadDot.Visible = false; d.HeadDot.Color = Color3.fromRGB(255,0,0); d.HeadDot.Thickness = 1; d.HeadDot.Radius = 4; d.HeadDot.Filled = true; d.HeadDot.Transparency = 1
-    d.SkeletonHead = Drawing.new("Line"); d.SkeletonHead.Visible = false; d.SkeletonHead.Color = Color3.fromRGB(0,180,255); d.SkeletonHead.Thickness = 1; d.SkeletonHead.Transparency = 1
-    d.SkeletonTorso = Drawing.new("Line"); d.SkeletonTorso.Visible = false; d.SkeletonTorso.Color = Color3.fromRGB(0,180,255); d.SkeletonTorso.Thickness = 1; d.SkeletonTorso.Transparency = 1
-    d.SkeletonLeftArm = Drawing.new("Line"); d.SkeletonLeftArm.Visible = false; d.SkeletonLeftArm.Color = Color3.fromRGB(0,180,255); d.SkeletonLeftArm.Thickness = 1; d.SkeletonLeftArm.Transparency = 1
-    d.SkeletonRightArm = Drawing.new("Line"); d.SkeletonRightArm.Visible = false; d.SkeletonRightArm.Color = Color3.fromRGB(0,180,255); d.SkeletonRightArm.Thickness = 1; d.SkeletonRightArm.Transparency = 1
-    d.SkeletonLeftLeg = Drawing.new("Line"); d.SkeletonLeftLeg.Visible = false; d.SkeletonLeftLeg.Color = Color3.fromRGB(0,180,255); d.SkeletonLeftLeg.Thickness = 1; d.SkeletonLeftLeg.Transparency = 1
-    d.SkeletonRightLeg = Drawing.new("Line"); d.SkeletonRightLeg.Visible = false; d.SkeletonRightLeg.Color = Color3.fromRGB(0,180,255); d.SkeletonRightLeg.Thickness = 1; d.SkeletonRightLeg.Transparency = 1
+    d.SkeletonHead = Drawing.new("Line"); d.SkeletonHead.Visible = false; d.SkeletonHead.Color = THEME.AccentColor; d.SkeletonHead.Thickness = 1; d.SkeletonHead.Transparency = 1
+    d.SkeletonTorso = Drawing.new("Line"); d.SkeletonTorso.Visible = false; d.SkeletonTorso.Color = THEME.AccentColor; d.SkeletonTorso.Thickness = 1; d.SkeletonTorso.Transparency = 1
+    d.SkeletonLeftArm = Drawing.new("Line"); d.SkeletonLeftArm.Visible = false; d.SkeletonLeftArm.Color = THEME.AccentColor; d.SkeletonLeftArm.Thickness = 1; d.SkeletonLeftArm.Transparency = 1
+    d.SkeletonRightArm = Drawing.new("Line"); d.SkeletonRightArm.Visible = false; d.SkeletonRightArm.Color = THEME.AccentColor; d.SkeletonRightArm.Thickness = 1; d.SkeletonRightArm.Transparency = 1
+    d.SkeletonLeftLeg = Drawing.new("Line"); d.SkeletonLeftLeg.Visible = false; d.SkeletonLeftLeg.Color = THEME.AccentColor; d.SkeletonLeftLeg.Thickness = 1; d.SkeletonLeftLeg.Transparency = 1
+    d.SkeletonRightLeg = Drawing.new("Line"); d.SkeletonRightLeg.Visible = false; d.SkeletonRightLeg.Color = THEME.AccentColor; d.SkeletonRightLeg.Thickness = 1; d.SkeletonRightLeg.Transparency = 1
     ESPObjects[player] = d
 end
 
@@ -714,9 +627,9 @@ local function CreateChams(player)
         if part:IsA("BasePart") or part:IsA("MeshPart") then
             local h = Instance.new("Highlight")
             h.Adornee = part
-            h.FillColor = Color3.fromRGB(0,180,255)
+            h.FillColor = THEME.AccentColor
             h.FillTransparency = 0.7
-            h.OutlineColor = Color3.fromRGB(0,255,255)
+            h.OutlineColor = THEME.AccentLight
             h.OutlineTransparency = 0
             h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
             h.Parent = part
@@ -819,8 +732,8 @@ local function UpdateESP()
 
                     if not RainbowESPEnabled then
                         local hp = hum.Health / hum.MaxHealth
-                        if hp > 0.7 then d.Box.Color = Color3.fromRGB(0,255,0); d.HealthBar.Color = Color3.fromRGB(0,255,0)
-                        elseif hp > 0.4 then d.Box.Color = Color3.fromRGB(255,255,0); d.HealthBar.Color = Color3.fromRGB(255,255,0)
+                        if hp > 0.7 then d.Box.Color = THEME.SuccessColor; d.HealthBar.Color = THEME.SuccessColor
+                        elseif hp > 0.4 then d.Box.Color = Color3.fromRGB(255,150,0); d.HealthBar.Color = Color3.fromRGB(255,150,0)
                         else d.Box.Color = Color3.fromRGB(255,0,0); d.HealthBar.Color = Color3.fromRGB(255,0,0) end
                     end
                 else
@@ -922,7 +835,6 @@ local function AimbotFunction()
     end
 end
 
--- LOOK AT PLAYER (Fitur Unik)
 local function LookAtPlayer()
     if not LookAtEnabled or not IsLoggedIn then return end
     local target = GetClosestTarget()
@@ -931,16 +843,14 @@ local function LookAtPlayer()
         if tPart then
             local camPos = Camera.CFrame.Position
             local lookDir = (tPart.Position - camPos).Unit
-            pcall(function()
-                Camera.CFrame = CFrame.new(camPos, camPos + lookDir)
-            end)
+            pcall(function() Camera.CFrame = CFrame.new(camPos, camPos + lookDir) end)
         end
     end
 end
 
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Visible = false
-FOVCircle.Color = Color3.fromRGB(0, 180, 255)
+FOVCircle.Color = THEME.AccentColor
 FOVCircle.Thickness = 2
 FOVCircle.Radius = FOVRadius
 FOVCircle.Filled = false
@@ -965,24 +875,24 @@ RunService.RenderStepped:Connect(function()
 end)
 
 --==============================================================
--- UI BUILDER
+-- UI BUILDER (RED & BLACK THEME)
 --==============================================================
 local function CreateUI()
 
     --===== LOADING SCREEN =====
     local LoadingScreen = Instance.new("Frame")
     LoadingScreen.Size = UDim2.new(1, 0, 1, 0)
-    LoadingScreen.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+    LoadingScreen.BackgroundColor3 = Color3.fromRGB(5, 0, 0)
     LoadingScreen.BorderSizePixel = 0
     LoadingScreen.ZIndex = 300
     LoadingScreen.Visible = true
     LoadingScreen.Parent = ScreenGui
 
     local LoadingBg = Instance.new("Frame")
-    LoadingBg.Size = UDim2.new(0, 340, 0, 200)
-    LoadingBg.Position = UDim2.new(0.5, -170, 0.5, -100)
-    LoadingBg.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    LoadingBg.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    LoadingBg.Size = UDim2.new(0, 360, 0, 220)
+    LoadingBg.Position = UDim2.new(0.5, -180, 0.5, -110)
+    LoadingBg.BackgroundColor3 = THEME.MainBG
+    LoadingBg.BorderColor3 = THEME.AccentColor
     LoadingBg.BorderSizePixel = 2
     LoadingBg.ZIndex = 301
     LoadingBg.Parent = LoadingScreen
@@ -990,21 +900,32 @@ local function CreateUI()
 
     local LTitle = Instance.new("TextLabel")
     LTitle.Size = UDim2.new(1, -30, 0, 40)
-    LTitle.Position = UDim2.new(0, 15, 0, 20)
+    LTitle.Position = UDim2.new(0, 15, 0, 15)
     LTitle.BackgroundTransparency = 1
-    LTitle.Text = "ZETGAMES-AIMLOCK v3.8"
-    LTitle.TextColor3 = Color3.fromRGB(0, 180, 255)
+    LTitle.Text = "ZETGAMES-AIMLOCK-ADVANSERVER"
+    LTitle.TextColor3 = THEME.TextColor
     LTitle.Font = Enum.Font.Code
-    LTitle.TextSize = 20
+    LTitle.TextSize = 18
     LTitle.ZIndex = 302
     LTitle.Parent = LoadingBg
 
+    local LTag = Instance.new("TextLabel")
+    LTag.Size = UDim2.new(1, -30, 0, 20)
+    LTag.Position = UDim2.new(0, 15, 0, 50)
+    LTag.BackgroundTransparency = 1
+    LTag.Text = "[ TESTING BUILD - UJI COBA ]"
+    LTag.TextColor3 = Color3.fromRGB(255, 200, 0)
+    LTag.Font = Enum.Font.Code
+    LTag.TextSize = 11
+    LTag.ZIndex = 302
+    LTag.Parent = LoadingBg
+
     local LSub = Instance.new("TextLabel")
     LSub.Size = UDim2.new(1, -30, 0, 25)
-    LSub.Position = UDim2.new(0, 15, 0, 65)
+    LSub.Position = UDim2.new(0, 15, 0, 75)
     LSub.BackgroundTransparency = 1
     LSub.Text = "> INITIALIZING SYSTEM..."
-    LSub.TextColor3 = Color3.fromRGB(100, 180, 255)
+    LSub.TextColor3 = THEME.TextLight
     LSub.Font = Enum.Font.Code
     LSub.TextSize = 12
     LSub.TextXAlignment = Enum.TextXAlignment.Left
@@ -1013,9 +934,9 @@ local function CreateUI()
 
     local LBarBg = Instance.new("Frame")
     LBarBg.Size = UDim2.new(1, -30, 0, 15)
-    LBarBg.Position = UDim2.new(0, 15, 0, 100)
-    LBarBg.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
-    LBarBg.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    LBarBg.Position = UDim2.new(0, 15, 0, 110)
+    LBarBg.BackgroundColor3 = Color3.fromRGB(30, 10, 10)
+    LBarBg.BorderColor3 = THEME.AccentColor
     LBarBg.BorderSizePixel = 1
     LBarBg.ZIndex = 302
     LBarBg.Parent = LoadingBg
@@ -1023,7 +944,7 @@ local function CreateUI()
 
     local LBarFill = Instance.new("Frame")
     LBarFill.Size = UDim2.new(0, 0, 1, 0)
-    LBarFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    LBarFill.BackgroundColor3 = THEME.AccentColor
     LBarFill.BorderSizePixel = 0
     LBarFill.ZIndex = 303
     LBarFill.Parent = LBarBg
@@ -1031,10 +952,10 @@ local function CreateUI()
 
     local LPercent = Instance.new("TextLabel")
     LPercent.Size = UDim2.new(1, -30, 0, 20)
-    LPercent.Position = UDim2.new(0, 15, 0, 125)
+    LPercent.Position = UDim2.new(0, 15, 0, 135)
     LPercent.BackgroundTransparency = 1
     LPercent.Text = "0%"
-    LPercent.TextColor3 = Color3.fromRGB(0, 180, 255)
+    LPercent.TextColor3 = THEME.TextColor
     LPercent.Font = Enum.Font.Code
     LPercent.TextSize = 14
     LPercent.ZIndex = 302
@@ -1042,22 +963,33 @@ local function CreateUI()
 
     local LStatus = Instance.new("TextLabel")
     LStatus.Size = UDim2.new(1, -30, 0, 20)
-    LStatus.Position = UDim2.new(0, 15, 0, 160)
+    LStatus.Position = UDim2.new(0, 15, 0, 170)
     LStatus.BackgroundTransparency = 1
     LStatus.Text = "> LOADING..."
-    LStatus.TextColor3 = Color3.fromRGB(80, 150, 255)
+    LStatus.TextColor3 = THEME.TextLight
     LStatus.Font = Enum.Font.Code
     LStatus.TextSize = 10
     LStatus.TextXAlignment = Enum.TextXAlignment.Left
     LStatus.ZIndex = 302
     LStatus.Parent = LoadingBg
 
+    local LFooter = Instance.new("TextLabel")
+    LFooter.Size = UDim2.new(1, -30, 0, 20)
+    LFooter.Position = UDim2.new(0, 15, 0, 195)
+    LFooter.BackgroundTransparency = 1
+    LFooter.Text = "> FOR TESTING PURPOSES ONLY"
+    LFooter.TextColor3 = Color3.fromRGB(255, 200, 0)
+    LFooter.Font = Enum.Font.Code
+    LFooter.TextSize = 9
+    LFooter.ZIndex = 302
+    LFooter.Parent = LoadingBg
+
     --===== LOGIN FRAME =====
     local LoginFrame = Instance.new("Frame")
-    LoginFrame.Size = UDim2.new(0, 320, 0, 420)
-    LoginFrame.Position = UDim2.new(0.5, -160, 0.5, -210)
-    LoginFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    LoginFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    LoginFrame.Size = UDim2.new(0, 340, 0, 450)
+    LoginFrame.Position = UDim2.new(0.5, -170, 0.5, -225)
+    LoginFrame.BackgroundColor3 = THEME.MainBG
+    LoginFrame.BorderColor3 = THEME.AccentColor
     LoginFrame.BorderSizePixel = 2
     LoginFrame.ZIndex = 10
     LoginFrame.Visible = false
@@ -1066,7 +998,7 @@ local function CreateUI()
 
     local LTop = Instance.new("Frame")
     LTop.Size = UDim2.new(1, 0, 0, 35)
-    LTop.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
+    LTop.BackgroundColor3 = THEME.SectionBG
     LTop.BorderSizePixel = 0
     LTop.ZIndex = 11
     LTop.Parent = LoginFrame
@@ -1076,10 +1008,10 @@ local function CreateUI()
     LTopTxt.Size = UDim2.new(1, -16, 1, 0)
     LTopTxt.Position = UDim2.new(0, 8, 0, 0)
     LTopTxt.BackgroundTransparency = 1
-    LTopTxt.Text = "● ZETGAMES-AIMLOCK v3.8"
-    LTopTxt.TextColor3 = Color3.fromRGB(0, 180, 255)
+    LTopTxt.Text = "● ZETGAMES-AIMLOCK-ADVANSERVER"
+    LTopTxt.TextColor3 = THEME.TextColor
     LTopTxt.Font = Enum.Font.Code
-    LTopTxt.TextSize = 12
+    LTopTxt.TextSize = 11
     LTopTxt.TextXAlignment = Enum.TextXAlignment.Left
     LTopTxt.ZIndex = 12
     LTopTxt.Parent = LTop
@@ -1089,18 +1021,30 @@ local function CreateUI()
     LTitle2.Position = UDim2.new(0, 15, 0, 50)
     LTitle2.BackgroundTransparency = 1
     LTitle2.Text = "> ACCESS VERIFICATION"
-    LTitle2.TextColor3 = Color3.fromRGB(0, 180, 255)
+    LTitle2.TextColor3 = THEME.TextColor
     LTitle2.Font = Enum.Font.Code
     LTitle2.TextSize = 16
     LTitle2.ZIndex = 12
     LTitle2.Parent = LoginFrame
 
+    local LTag2 = Instance.new("TextLabel")
+    LTag2.Size = UDim2.new(1, -30, 0, 20)
+    LTag2.Position = UDim2.new(0, 15, 0, 85)
+    LTag2.BackgroundTransparency = 1
+    LTag2.Text = "[ TESTING BUILD - NO NIGHT LOCK ]"
+    LTag2.TextColor3 = Color3.fromRGB(255, 200, 0)
+    LTag2.Font = Enum.Font.Code
+    LTag2.TextSize = 10
+    LTag2.TextXAlignment = Enum.TextXAlignment.Left
+    LTag2.ZIndex = 12
+    LTag2.Parent = LoginFrame
+
     local KeyLbl = Instance.new("TextLabel")
     KeyLbl.Size = UDim2.new(1, -30, 0, 20)
-    KeyLbl.Position = UDim2.new(0, 15, 0, 95)
+    KeyLbl.Position = UDim2.new(0, 15, 0, 115)
     KeyLbl.BackgroundTransparency = 1
     KeyLbl.Text = "> KEY_INPUT:"
-    KeyLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    KeyLbl.TextColor3 = THEME.TextColor
     KeyLbl.Font = Enum.Font.Code
     KeyLbl.TextSize = 12
     KeyLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1109,14 +1053,14 @@ local function CreateUI()
 
     local KeyInput = Instance.new("TextBox")
     KeyInput.Size = UDim2.new(1, -30, 0, 40)
-    KeyInput.Position = UDim2.new(0, 15, 0, 120)
-    KeyInput.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-    KeyInput.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    KeyInput.Position = UDim2.new(0, 15, 0, 140)
+    KeyInput.BackgroundColor3 = THEME.PanelBG
+    KeyInput.BorderColor3 = THEME.AccentColor
     KeyInput.BorderSizePixel = 2
     KeyInput.PlaceholderText = "> Type key..."
-    KeyInput.PlaceholderColor3 = Color3.fromRGB(60, 80, 100)
+    KeyInput.PlaceholderColor3 = Color3.fromRGB(100, 50, 50)
     KeyInput.Text = ""
-    KeyInput.TextColor3 = Color3.fromRGB(0, 180, 255)
+    KeyInput.TextColor3 = THEME.TextColor
     KeyInput.Font = Enum.Font.Code
     KeyInput.TextSize = 13
     KeyInput.ZIndex = 12
@@ -1125,12 +1069,12 @@ local function CreateUI()
 
     local LoginBtn = Instance.new("TextButton")
     LoginBtn.Size = UDim2.new(1, -30, 0, 45)
-    LoginBtn.Position = UDim2.new(0, 15, 0, 175)
-    LoginBtn.BackgroundColor3 = Color3.fromRGB(0, 80, 150)
-    LoginBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
+    LoginBtn.Position = UDim2.new(0, 15, 0, 195)
+    LoginBtn.BackgroundColor3 = THEME.ButtonActive
+    LoginBtn.BorderColor3 = THEME.AccentColor
     LoginBtn.BorderSizePixel = 2
     LoginBtn.Text = "> AUTHENTICATE"
-    LoginBtn.TextColor3 = Color3.fromRGB(0, 180, 255)
+    LoginBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     LoginBtn.Font = Enum.Font.Code
     LoginBtn.TextSize = 14
     LoginBtn.ZIndex = 12
@@ -1139,12 +1083,12 @@ local function CreateUI()
 
     local GetKeyBtn = Instance.new("TextButton")
     GetKeyBtn.Size = UDim2.new(1, -30, 0, 45)
-    GetKeyBtn.Position = UDim2.new(0, 15, 0, 235)
-    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 50, 100)
-    GetKeyBtn.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    GetKeyBtn.Position = UDim2.new(0, 15, 0, 255)
+    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    GetKeyBtn.BorderColor3 = THEME.AccentDark
     GetKeyBtn.BorderSizePixel = 2
     GetKeyBtn.Text = "> GET KEY (COPY)"
-    GetKeyBtn.TextColor3 = Color3.fromRGB(0, 180, 255)
+    GetKeyBtn.TextColor3 = THEME.TextLight
     GetKeyBtn.Font = Enum.Font.Code
     GetKeyBtn.TextSize = 14
     GetKeyBtn.ZIndex = 12
@@ -1153,10 +1097,10 @@ local function CreateUI()
 
     local StatusTxt = Instance.new("TextLabel")
     StatusTxt.Size = UDim2.new(1, -30, 0, 25)
-    StatusTxt.Position = UDim2.new(0, 15, 0, 295)
+    StatusTxt.Position = UDim2.new(0, 15, 0, 315)
     StatusTxt.BackgroundTransparency = 1
     StatusTxt.Text = "> SYSTEM READY..."
-    StatusTxt.TextColor3 = Color3.fromRGB(0, 150, 255)
+    StatusTxt.TextColor3 = THEME.TextColor
     StatusTxt.Font = Enum.Font.Code
     StatusTxt.TextSize = 10
     StatusTxt.TextXAlignment = Enum.TextXAlignment.Left
@@ -1164,11 +1108,11 @@ local function CreateUI()
     StatusTxt.Parent = LoginFrame
 
     local Instr = Instance.new("TextLabel")
-    Instr.Size = UDim2.new(1, -30, 0, 60)
-    Instr.Position = UDim2.new(0, 15, 0, 335)
+    Instr.Size = UDim2.new(1, -30, 0, 80)
+    Instr.Position = UDim2.new(0, 15, 0, 350)
     Instr.BackgroundTransparency = 1
-    Instr.Text = "> STEPS:\n> 1. Click GET KEY\n> 2. Generate key\n> 3. Enter key\n> 4. AUTHENTICATE"
-    Instr.TextColor3 = Color3.fromRGB(0, 130, 255)
+    Instr.Text = "> STEPS:\n> 1. Click GET KEY\n> 2. Generate key\n> 3. Enter key\n> 4. AUTHENTICATE\n> [ NO AUTO KICK IN TESTING BUILD ]"
+    Instr.TextColor3 = THEME.TextLight
     Instr.Font = Enum.Font.Code
     Instr.TextSize = 9
     Instr.TextXAlignment = Enum.TextXAlignment.Left
@@ -1177,10 +1121,10 @@ local function CreateUI()
 
     --===== MAIN HUB =====
     local MainHub = Instance.new("Frame")
-    MainHub.Size = UDim2.new(0, 340, 0, 480)
-    MainHub.Position = UDim2.new(0.5, -170, 0.5, -240)
-    MainHub.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-    MainHub.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    MainHub.Size = UDim2.new(0, 360, 0, 500)
+    MainHub.Position = UDim2.new(0.5, -180, 0.5, -250)
+    MainHub.BackgroundColor3 = THEME.MainBG
+    MainHub.BorderColor3 = THEME.AccentColor
     MainHub.BorderSizePixel = 2
     MainHub.Visible = false
     MainHub.ZIndex = 10
@@ -1189,7 +1133,7 @@ local function CreateUI()
 
     local TitleBar = Instance.new("Frame")
     TitleBar.Size = UDim2.new(1, 0, 0, 40)
-    TitleBar.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
+    TitleBar.BackgroundColor3 = THEME.SectionBG
     TitleBar.BorderSizePixel = 0
     TitleBar.ZIndex = 11
     TitleBar.Parent = MainHub
@@ -1199,10 +1143,10 @@ local function CreateUI()
     MainTitle2.Size = UDim2.new(1, -50, 1, 0)
     MainTitle2.Position = UDim2.new(0, 12, 0, 0)
     MainTitle2.BackgroundTransparency = 1
-    MainTitle2.Text = "● ZETGAMES-AIMLOCK v3.8"
-    MainTitle2.TextColor3 = Color3.fromRGB(0, 180, 255)
+    MainTitle2.Text = "● ZETGAMES-AIMLOCK-ADVANSERVER"
+    MainTitle2.TextColor3 = THEME.TextColor
     MainTitle2.Font = Enum.Font.Code
-    MainTitle2.TextSize = 12
+    MainTitle2.TextSize = 11
     MainTitle2.TextXAlignment = Enum.TextXAlignment.Left
     MainTitle2.ZIndex = 12
     MainTitle2.Parent = TitleBar
@@ -1210,8 +1154,8 @@ local function CreateUI()
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0, 30, 0, 30)
     CloseBtn.Position = UDim2.new(1, -38, 0, 5)
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-    CloseBtn.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    CloseBtn.BorderColor3 = THEME.AccentColor
     CloseBtn.BorderSizePixel = 1
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1227,7 +1171,7 @@ local function CreateUI()
     ScrollFrame.BackgroundTransparency = 1
     ScrollFrame.BorderSizePixel = 0
     ScrollFrame.ScrollBarThickness = 8
-    ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
+    ScrollFrame.ScrollBarImageColor3 = THEME.AccentColor
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 3400)
     ScrollFrame.ZIndex = 11
     ScrollFrame.Parent = MainHub
@@ -1243,8 +1187,8 @@ local function CreateUI()
         local f = Instance.new("Frame")
         f.Size = UDim2.new(1, -20, 0, 25)
         f.Position = UDim2.new(0, 10, 0, y)
-        f.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
-        f.BorderColor3 = Color3.fromRGB(0, 150, 255)
+        f.BackgroundColor3 = THEME.SectionBG
+        f.BorderColor3 = THEME.AccentColor
         f.BorderSizePixel = 1
         f.ZIndex = 12
         f.Parent = ScrollContent
@@ -1254,7 +1198,7 @@ local function CreateUI()
         t.Position = UDim2.new(0, 5, 0, 0)
         t.BackgroundTransparency = 1
         t.Text = title
-        t.TextColor3 = Color3.fromRGB(0, 180, 255)
+        t.TextColor3 = THEME.TextColor
         t.Font = Enum.Font.Code
         t.TextSize = 11
         t.TextXAlignment = Enum.TextXAlignment.Left
@@ -1266,11 +1210,11 @@ local function CreateUI()
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, -20, 0, 40)
         btn.Position = UDim2.new(0, 10, 0, y)
-        btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-        btn.BorderColor3 = Color3.fromRGB(0, 150, 255)
+        btn.BackgroundColor3 = THEME.ButtonBG
+        btn.BorderColor3 = THEME.AccentColor
         btn.BorderSizePixel = 1
         btn.Text = text
-        btn.TextColor3 = Color3.fromRGB(0, 180, 255)
+        btn.TextColor3 = THEME.TextColor
         btn.Font = Enum.Font.Code
         btn.TextSize = 12
         btn.ZIndex = 12
@@ -1284,13 +1228,13 @@ local function CreateUI()
         local tb = Instance.new("TextBox")
         tb.Size = UDim2.new(1, -20, 0, 35)
         tb.Position = UDim2.new(0, 10, 0, y)
-        tb.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-        tb.BorderColor3 = Color3.fromRGB(0, 150, 255)
+        tb.BackgroundColor3 = THEME.PanelBG
+        tb.BorderColor3 = THEME.AccentColor
         tb.BorderSizePixel = 1
         tb.PlaceholderText = placeholder
-        tb.PlaceholderColor3 = Color3.fromRGB(60, 80, 100)
+        tb.PlaceholderColor3 = Color3.fromRGB(100, 50, 50)
         tb.Text = defaultText or ""
-        tb.TextColor3 = Color3.fromRGB(0, 180, 255)
+        tb.TextColor3 = THEME.TextColor
         tb.Font = Enum.Font.Code
         tb.TextSize = 11
         tb.ZIndex = 12
@@ -1306,8 +1250,8 @@ local function CreateUI()
     local UIF = Instance.new("Frame")
     UIF.Size = UDim2.new(1, -20, 0, 130)
     UIF.Position = UDim2.new(0, 10, 0, 60)
-    UIF.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-    UIF.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    UIF.BackgroundColor3 = THEME.PanelBG
+    UIF.BorderColor3 = THEME.AccentColor
     UIF.BorderSizePixel = 1
     UIF.ZIndex = 12
     UIF.Parent = ScrollContent
@@ -1318,7 +1262,7 @@ local function CreateUI()
     NameLbl.Position = UDim2.new(0, 10, 0, 10)
     NameLbl.BackgroundTransparency = 1
     NameLbl.Text = "> NAME : " .. LocalPlayer.DisplayName
-    NameLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    NameLbl.TextColor3 = THEME.TextColor
     NameLbl.Font = Enum.Font.Code
     NameLbl.TextSize = 12
     NameLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1330,7 +1274,7 @@ local function CreateUI()
     UserLbl.Position = UDim2.new(0, 10, 0, 40)
     UserLbl.BackgroundTransparency = 1
     UserLbl.Text = "> USERNAME : " .. LocalPlayer.Name
-    UserLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    UserLbl.TextColor3 = THEME.TextColor
     UserLbl.Font = Enum.Font.Code
     UserLbl.TextSize = 12
     UserLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1341,8 +1285,8 @@ local function CreateUI()
     VPNLbl.Size = UDim2.new(1, -15, 0, 25)
     VPNLbl.Position = UDim2.new(0, 10, 0, 70)
     VPNLbl.BackgroundTransparency = 1
-    VPNLbl.Text = "> VPN : ON (PROTECTED)"
-    VPNLbl.TextColor3 = Color3.fromRGB(0, 255, 0)
+    VPNLbl.Text = "> BUILD : TESTING (ADVANSERVER)"
+    VPNLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
     VPNLbl.Font = Enum.Font.Code
     VPNLbl.TextSize = 12
     VPNLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1367,11 +1311,11 @@ local function CreateUI()
         FPSBoostEnabled = not FPSBoostEnabled
         if FPSBoostEnabled then
             btn.Text = "> FPS BOOST: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             EnableFPSBoost()
         else
             btn.Text = "> FPS BOOST: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             DisableFPSBoost()
         end
     end)
@@ -1380,11 +1324,11 @@ local function CreateUI()
         FullbrightEnabled = not FullbrightEnabled
         if FullbrightEnabled then
             btn.Text = "> FULLBRIGHT: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             EnableFullbright()
         else
             btn.Text = "> FULLBRIGHT: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             DisableFullbright()
         end
     end)
@@ -1393,11 +1337,11 @@ local function CreateUI()
         SpeedHackEnabled = not SpeedHackEnabled
         if SpeedHackEnabled then
             btn.Text = "> SPEED HACK: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             ApplySpeedHack()
         else
             btn.Text = "> SPEED HACK: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             ApplySpeedHack()
         end
     end)
@@ -1418,11 +1362,11 @@ local function CreateUI()
         InfiniteJumpEnabled = not InfiniteJumpEnabled
         if InfiniteJumpEnabled then
             btn.Text = "> INFINITE JUMP: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             EnableInfiniteJump()
         else
             btn.Text = "> INFINITE JUMP: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             DisableInfiniteJump()
         end
     end)
@@ -1431,17 +1375,17 @@ local function CreateUI()
         NoclipEnabled = not NoclipEnabled
         if NoclipEnabled then
             btn.Text = "> NOCLIP: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             EnableNoclip()
         else
             btn.Text = "> NOCLIP: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             DisableNoclip()
         end
     end)
 
     --==========================================================
-    -- SURVIVAL FEATURES (Fitur Unik Baru)
+    -- SURVIVAL FEATURES
     --==========================================================
     Section("=== SURVIVAL FEATURES ===", 510)
 
@@ -1449,14 +1393,12 @@ local function CreateUI()
         AutoRespawnEnabled = not AutoRespawnEnabled
         if AutoRespawnEnabled then
             btn.Text = "> AUTO RESPAWN: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             StartAutoRespawn()
-            Notify("Auto Respawn", "> ENABLED", 2)
         else
             btn.Text = "> AUTO RESPAWN: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             StopAutoRespawn()
-            Notify("Auto Respawn", "> DISABLED", 2)
         end
     end)
 
@@ -1464,14 +1406,12 @@ local function CreateUI()
         VoidProtectEnabled = not VoidProtectEnabled
         if VoidProtectEnabled then
             btn.Text = "> VOID PROTECT: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             StartVoidProtect()
-            Notify("Void Protect", "> ENABLED", 2)
         else
             btn.Text = "> VOID PROTECT: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             StopVoidProtect()
-            Notify("Void Protect", "> DISABLED", 2)
         end
     end)
 
@@ -1479,14 +1419,12 @@ local function CreateUI()
         AntiFlingEnabled = not AntiFlingEnabled
         if AntiFlingEnabled then
             btn.Text = "> ANTI-FLING: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             StartAntiFling()
-            Notify("Anti-Fling", "> ENABLED", 2)
         else
             btn.Text = "> ANTI-FLING: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             StopAntiFling()
-            Notify("Anti-Fling", "> DISABLED", 2)
         end
     end)
 
@@ -1494,12 +1432,10 @@ local function CreateUI()
         LookAtEnabled = not LookAtEnabled
         if LookAtEnabled then
             btn.Text = "> LOOK AT PLAYER: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-            Notify("Look At", "> ENABLED", 2)
+            btn.BackgroundColor3 = THEME.ButtonActive
         else
             btn.Text = "> LOOK AT PLAYER: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-            Notify("Look At", "> DISABLED", 2)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1512,11 +1448,11 @@ local function CreateUI()
         ChatSpamEnabled = not ChatSpamEnabled
         if ChatSpamEnabled then
             btn.Text = "> CHAT SPAM: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             StartChatSpamLoop()
         else
             btn.Text = "> CHAT SPAM: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1545,14 +1481,12 @@ local function CreateUI()
         SoundESPEnabled = not SoundESPEnabled
         if SoundESPEnabled then
             btn.Text = "> SOUND ESP: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             StartSoundESP()
-            Notify("Sound ESP", "> ENABLED", 2)
         else
             btn.Text = "> SOUND ESP: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             StopSoundESP()
-            Notify("Sound ESP", "> DISABLED", 2)
         end
     end)
 
@@ -1578,14 +1512,12 @@ local function CreateUI()
         MusicPlayerEnabled = not MusicPlayerEnabled
         if MusicPlayerEnabled then
             btn.Text = "> MUSIC PLAYER: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             StartMusic()
-            Notify("Music Player", "> PLAYING", 2)
         else
             btn.Text = "> MUSIC PLAYER: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             StopMusic()
-            Notify("Music Player", "> STOPPED", 2)
         end
     end)
 
@@ -1619,11 +1551,11 @@ local function CreateUI()
     local AimbotBtn = Instance.new("TextButton")
     AimbotBtn.Size = UDim2.new(1, -20, 0, 45)
     AimbotBtn.Position = UDim2.new(0, 10, 0, 1210)
-    AimbotBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-    AimbotBtn.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    AimbotBtn.BackgroundColor3 = THEME.ButtonBG
+    AimbotBtn.BorderColor3 = THEME.AccentColor
     AimbotBtn.BorderSizePixel = 2
     AimbotBtn.Text = "> AIMBOT: OFF"
-    AimbotBtn.TextColor3 = Color3.fromRGB(0, 180, 255)
+    AimbotBtn.TextColor3 = THEME.TextColor
     AimbotBtn.Font = Enum.Font.Code
     AimbotBtn.TextSize = 13
     AimbotBtn.ZIndex = 12
@@ -1633,10 +1565,10 @@ local function CreateUI()
         AimbotEnabled = not AimbotEnabled
         if AimbotEnabled then
             AimbotBtn.Text = "> AIMBOT: ON"
-            AimbotBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            AimbotBtn.BackgroundColor3 = THEME.ButtonActive
         else
             AimbotBtn.Text = "> AIMBOT: OFF"
-            AimbotBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            AimbotBtn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1645,7 +1577,7 @@ local function CreateUI()
     ModeLbl.Position = UDim2.new(0, 10, 0, 1260)
     ModeLbl.BackgroundTransparency = 1
     ModeLbl.Text = "> AIMBOT MODE: ACCURATE"
-    ModeLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    ModeLbl.TextColor3 = THEME.TextColor
     ModeLbl.Font = Enum.Font.Code
     ModeLbl.TextSize = 11
     ModeLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1663,11 +1595,11 @@ local function CreateUI()
         local b = Instance.new("TextButton")
         b.Size = UDim2.new(0.31, 0, 1, 0)
         b.Position = UDim2.new(xPos, 0, 0, 0)
-        b.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-        b.BorderColor3 = Color3.fromRGB(0, 150, 255)
+        b.BackgroundColor3 = THEME.ButtonBG
+        b.BorderColor3 = THEME.AccentColor
         b.BorderSizePixel = 1
         b.Text = text
-        b.TextColor3 = Color3.fromRGB(0, 180, 255)
+        b.TextColor3 = THEME.TextColor
         b.Font = Enum.Font.Code
         b.TextSize = 10
         b.ZIndex = 13
@@ -1686,10 +1618,10 @@ local function CreateUI()
         PredictionEnabled = not PredictionEnabled
         if PredictionEnabled then
             btn.Text = "> PREDICTION: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
         else
             btn.Text = "> PREDICTION: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1706,10 +1638,10 @@ local function CreateUI()
         WallCheckEnabled = not WallCheckEnabled
         if WallCheckEnabled then
             btn.Text = "> WALL_CHECK: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
         else
             btn.Text = "> WALL_CHECK: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1717,10 +1649,10 @@ local function CreateUI()
         TeamCheckEnabled = not TeamCheckEnabled
         if TeamCheckEnabled then
             btn.Text = "> TEAM_CHECK: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
         else
             btn.Text = "> TEAM_CHECK: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1729,7 +1661,7 @@ local function CreateUI()
     TargetLbl.Position = UDim2.new(0, 10, 0, 1505)
     TargetLbl.BackgroundTransparency = 1
     TargetLbl.Text = "> TARGET_PART: HEAD"
-    TargetLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    TargetLbl.TextColor3 = THEME.TextColor
     TargetLbl.Font = Enum.Font.Code
     TargetLbl.TextSize = 11
     TargetLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1747,11 +1679,11 @@ local function CreateUI()
         local b = Instance.new("TextButton")
         b.Size = UDim2.new(0, 90, 1, 0)
         b.Position = UDim2.new(xPos, 0, 0, 0)
-        b.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-        b.BorderColor3 = Color3.fromRGB(0, 150, 255)
+        b.BackgroundColor3 = THEME.ButtonBG
+        b.BorderColor3 = THEME.AccentColor
         b.BorderSizePixel = 1
         b.Text = text
-        b.TextColor3 = Color3.fromRGB(0, 180, 255)
+        b.TextColor3 = THEME.TextColor
         b.Font = Enum.Font.Code
         b.TextSize = 10
         b.ZIndex = 13
@@ -1775,10 +1707,10 @@ local function CreateUI()
         ESPEnabled = not ESPEnabled
         if ESPEnabled then
             btn.Text = "> ESP MASTER: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
         else
             btn.Text = "> ESP MASTER: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -1786,11 +1718,11 @@ local function CreateUI()
         RainbowESPEnabled = not RainbowESPEnabled
         if RainbowESPEnabled then
             btn.Text = "> 🌈 RAINBOW ESP: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             EnableRainbowESP()
         else
             btn.Text = "> 🌈 RAINBOW ESP: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
             DisableRainbowESP()
         end
     end)
@@ -1799,11 +1731,11 @@ local function CreateUI()
         local b = Instance.new("TextButton")
         b.Size = UDim2.new(0.48, -15, 0, 35)
         b.Position = UDim2.new(xPos, 0, 0, y)
-        b.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-        b.BorderColor3 = Color3.fromRGB(0, 180, 255)
+        b.BackgroundColor3 = THEME.ButtonActive
+        b.BorderColor3 = THEME.AccentColor
         b.BorderSizePixel = 1
         b.Text = text
-        b.TextColor3 = Color3.fromRGB(0, 180, 255)
+        b.TextColor3 = THEME.TextColor
         b.Font = Enum.Font.Code
         b.TextSize = 10
         b.ZIndex = 12
@@ -1816,43 +1748,43 @@ local function CreateUI()
     TogglePair("> BOX: ON", 1695, 0, function(btn)
         ESPBoxEnabled = not ESPBoxEnabled
         btn.Text = ESPBoxEnabled and "> BOX: ON" or "> BOX: OFF"
-        btn.BackgroundColor3 = ESPBoxEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPBoxEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     TogglePair("> NAME: ON", 1695, 0.52, function(btn)
         ESPNameEnabled = not ESPNameEnabled
         btn.Text = ESPNameEnabled and "> NAME: ON" or "> NAME: OFF"
-        btn.BackgroundColor3 = ESPNameEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPNameEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     TogglePair("> DISTANCE: ON", 1735, 0, function(btn)
         ESPDistanceEnabled = not ESPDistanceEnabled
         btn.Text = ESPDistanceEnabled and "> DISTANCE: ON" or "> DISTANCE: OFF"
-        btn.BackgroundColor3 = ESPDistanceEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPDistanceEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     TogglePair("> HEALTH: ON", 1735, 0.52, function(btn)
         ESPHealthEnabled = not ESPHealthEnabled
         btn.Text = ESPHealthEnabled and "> HEALTH: ON" or "> HEALTH: OFF"
-        btn.BackgroundColor3 = ESPHealthEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPHealthEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     TogglePair("> SKELETON: OFF", 1775, 0, function(btn)
         ESPSkeletonEnabled = not ESPSkeletonEnabled
         btn.Text = ESPSkeletonEnabled and "> SKELETON: ON" or "> SKELETON: OFF"
-        btn.BackgroundColor3 = ESPSkeletonEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPSkeletonEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     TogglePair("> HEAD DOT: OFF", 1775, 0.52, function(btn)
         ESPHeadDotEnabled = not ESPHeadDotEnabled
         btn.Text = ESPHeadDotEnabled and "> HEAD DOT: ON" or "> HEAD DOT: OFF"
-        btn.BackgroundColor3 = ESPHeadDotEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPHeadDotEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     TogglePair("> CHAMS: OFF", 1815, 0, function(btn)
         ESPChamsEnabled = not ESPChamsEnabled
         btn.Text = ESPChamsEnabled and "> CHAMS: ON" or "> CHAMS: OFF"
-        btn.BackgroundColor3 = ESPChamsEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPChamsEnabled and THEME.ButtonActive or THEME.ButtonBG
         if not ESPChamsEnabled then
             for p, _ in pairs(ChamsObjects) do RemoveChams(p) end
         end
@@ -1861,7 +1793,7 @@ local function CreateUI()
     TogglePair("> TRACER: ON", 1815, 0.52, function(btn)
         ESPTracerEnabled = not ESPTracerEnabled
         btn.Text = ESPTracerEnabled and "> TRACER: ON" or "> TRACER: OFF"
-        btn.BackgroundColor3 = ESPTracerEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
+        btn.BackgroundColor3 = ESPTracerEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     local TracerColorLbl = Instance.new("TextLabel")
@@ -1869,7 +1801,7 @@ local function CreateUI()
     TracerColorLbl.Position = UDim2.new(0, 10, 0, 1860)
     TracerColorLbl.BackgroundTransparency = 1
     TracerColorLbl.Text = "> TRACER COLOR: MERAH"
-    TracerColorLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    TracerColorLbl.TextColor3 = THEME.TextColor
     TracerColorLbl.Font = Enum.Font.Code
     TracerColorLbl.TextSize = 11
     TracerColorLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1888,7 +1820,7 @@ local function CreateUI()
         b.Size = UDim2.new(0.31, 0, 0, 35)
         b.Position = UDim2.new(xPos, 0, 0, 0)
         b.BackgroundColor3 = color
-        b.BorderColor3 = Color3.fromRGB(0, 150, 255)
+        b.BorderColor3 = THEME.AccentColor
         b.BorderSizePixel = 1
         b.Text = text
         b.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1915,11 +1847,11 @@ local function CreateUI()
     local TPMouseBtn = Instance.new("TextButton")
     TPMouseBtn.Size = UDim2.new(1, -20, 0, 40)
     TPMouseBtn.Position = UDim2.new(0, 10, 0, 1980)
-    TPMouseBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-    TPMouseBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
+    TPMouseBtn.BackgroundColor3 = THEME.ButtonActive
+    TPMouseBtn.BorderColor3 = THEME.AccentColor
     TPMouseBtn.BorderSizePixel = 1
     TPMouseBtn.Text = "> TELEPORT TO MOUSE"
-    TPMouseBtn.TextColor3 = Color3.fromRGB(0, 180, 255)
+    TPMouseBtn.TextColor3 = THEME.TextColor
     TPMouseBtn.Font = Enum.Font.Code
     TPMouseBtn.TextSize = 12
     TPMouseBtn.ZIndex = 12
@@ -1930,11 +1862,11 @@ local function CreateUI()
     local SaveLocBtn2 = Instance.new("TextButton")
     SaveLocBtn2.Size = UDim2.new(0.48, -15, 0, 40)
     SaveLocBtn2.Position = UDim2.new(0, 10, 0, 2025)
-    SaveLocBtn2.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-    SaveLocBtn2.BorderColor3 = Color3.fromRGB(0, 180, 255)
+    SaveLocBtn2.BackgroundColor3 = THEME.ButtonActive
+    SaveLocBtn2.BorderColor3 = THEME.AccentColor
     SaveLocBtn2.BorderSizePixel = 1
     SaveLocBtn2.Text = "> SAVE LOC"
-    SaveLocBtn2.TextColor3 = Color3.fromRGB(0, 180, 255)
+    SaveLocBtn2.TextColor3 = THEME.TextColor
     SaveLocBtn2.Font = Enum.Font.Code
     SaveLocBtn2.TextSize = 11
     SaveLocBtn2.ZIndex = 12
@@ -1945,11 +1877,11 @@ local function CreateUI()
     local LoadLocBtn2 = Instance.new("TextButton")
     LoadLocBtn2.Size = UDim2.new(0.48, -15, 0, 40)
     LoadLocBtn2.Position = UDim2.new(0.52, 5, 0, 2025)
-    LoadLocBtn2.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-    LoadLocBtn2.BorderColor3 = Color3.fromRGB(0, 180, 255)
+    LoadLocBtn2.BackgroundColor3 = THEME.ButtonActive
+    LoadLocBtn2.BorderColor3 = THEME.AccentColor
     LoadLocBtn2.BorderSizePixel = 1
     LoadLocBtn2.Text = "> LOAD LOC"
-    LoadLocBtn2.TextColor3 = Color3.fromRGB(0, 180, 255)
+    LoadLocBtn2.TextColor3 = THEME.TextColor
     LoadLocBtn2.Font = Enum.Font.Code
     LoadLocBtn2.TextSize = 11
     LoadLocBtn2.ZIndex = 12
@@ -1962,7 +1894,7 @@ local function CreateUI()
     TPListLbl.Position = UDim2.new(0, 10, 0, 2070)
     TPListLbl.BackgroundTransparency = 1
     TPListLbl.Text = "> PLAYERS (CLICK TO TELEPORT):"
-    TPListLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    TPListLbl.TextColor3 = THEME.TextColor
     TPListLbl.Font = Enum.Font.Code
     TPListLbl.TextSize = 10
     TPListLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1972,11 +1904,11 @@ local function CreateUI()
     local TeleportListFrame = Instance.new("ScrollingFrame")
     TeleportListFrame.Size = UDim2.new(1, -20, 0, 120)
     TeleportListFrame.Position = UDim2.new(0, 10, 0, 2095)
-    TeleportListFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
-    TeleportListFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    TeleportListFrame.BackgroundColor3 = Color3.fromRGB(20, 5, 5)
+    TeleportListFrame.BorderColor3 = THEME.AccentColor
     TeleportListFrame.BorderSizePixel = 1
     TeleportListFrame.ScrollBarThickness = 5
-    TeleportListFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
+    TeleportListFrame.ScrollBarImageColor3 = THEME.AccentColor
     TeleportListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     TeleportListFrame.ZIndex = 12
     TeleportListFrame.Parent = ScrollContent
@@ -1993,11 +1925,11 @@ local function CreateUI()
                 local b = Instance.new("TextButton")
                 b.Size = UDim2.new(1, -10, 0, 30)
                 b.Position = UDim2.new(0, 5, 0, y)
-                b.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-                b.BorderColor3 = Color3.fromRGB(0, 150, 255)
+                b.BackgroundColor3 = THEME.ButtonBG
+                b.BorderColor3 = THEME.AccentColor
                 b.BorderSizePixel = 1
                 b.Text = "> " .. player.Name
-                b.TextColor3 = Color3.fromRGB(0, 180, 255)
+                b.TextColor3 = THEME.TextColor
                 b.Font = Enum.Font.Code
                 b.TextSize = 11
                 b.ZIndex = 13
@@ -2021,11 +1953,11 @@ local function CreateUI()
         FOVCircle.Visible = FOVCircleEnabled
         if FOVCircleEnabled then
             btn.Text = "> FOV_CIRCLE: ON"
-            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            btn.BackgroundColor3 = THEME.ButtonActive
             FOVCircle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
         else
             btn.Text = "> FOV_CIRCLE: OFF"
-            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            btn.BackgroundColor3 = THEME.ButtonBG
         end
     end)
 
@@ -2056,11 +1988,11 @@ local function CreateUI()
     local ToggleMenuButton = Instance.new("TextButton")
     ToggleMenuButton.Size = UDim2.new(0, 45, 0, 45)
     ToggleMenuButton.Position = UDim2.new(0, 8, 0.5, -22)
-    ToggleMenuButton.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
-    ToggleMenuButton.BorderColor3 = Color3.fromRGB(0, 180, 255)
+    ToggleMenuButton.BackgroundColor3 = THEME.ButtonActive
+    ToggleMenuButton.BorderColor3 = THEME.AccentColor
     ToggleMenuButton.BorderSizePixel = 2
     ToggleMenuButton.Text = "≡"
-    ToggleMenuButton.TextColor3 = Color3.fromRGB(0, 180, 255)
+    ToggleMenuButton.TextColor3 = THEME.TextColor
     ToggleMenuButton.Font = Enum.Font.Code
     ToggleMenuButton.TextSize = 22
     ToggleMenuButton.ZIndex = 15
@@ -2187,7 +2119,7 @@ local function CreateUI()
     end)
 
     --==========================================================
-    -- LOADING + NIGHT LOCK
+    -- LOADING ANIMATION (NO NIGHT LOCK)
     --==========================================================
     local loadingMessages = {
         "> LOADING MODULES...",
@@ -2198,7 +2130,7 @@ local function CreateUI()
         "> LOADING SURVIVAL FEATURES...",
         "> LOADING FULL ESP...",
         "> LOADING CHAT SPAM...",
-        "> CHECKING NIGHT LOCK...",
+        "> TESTING BUILD - NO NIGHT LOCK...",
         "> SYSTEM READY..."
     }
 
@@ -2219,13 +2151,10 @@ local function CreateUI()
         task.wait(0.5)
         LoadingScreen.Visible = false
 
-        if IsNightLockActive() then
-            NightKickPlayer()
-        else
-            LoginFrame.Visible = true
-            Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
-            Notify("Login", "> ENTER ACCESS KEY", 3)
-        end
+        -- TESTING BUILD - NO NIGHT LOCK KICK
+        LoginFrame.Visible = true
+        Notify("ZetGames-AimLock-Advanserver", "> TESTING BUILD LOADED", 3)
+        Notify("Login", "> ENTER ACCESS KEY", 3)
     end)
 
     --==========================================================
