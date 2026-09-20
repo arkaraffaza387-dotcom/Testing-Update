@@ -1,8 +1,8 @@
 --[[
-    ZetGames-AimLock | Premium Edition v3.8 (FIXED v2)
+    ZetGames-AimLock | Premium Edition v3.8
     Theme: Blue & Black Hacker Style
-    Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam
-    Night Lock: REMOVED
+    Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam + Sound ESP + Music Player + Night Lock
+    Night Lock: 23:00 - 03:00
     All Toggles Working - NO BUG
 --]]
 
@@ -17,6 +17,7 @@ local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
+local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 
@@ -68,6 +69,19 @@ local ChatSpamEnabled = false
 local ChatSpamText = "ZETGAMES-AIMLOCK ON TOP!"
 local ChatSpamDelay = 3
 
+-- SOUND ESP
+local SoundESPEnabled = false
+local SoundESPRadius = 100
+local SoundESPConnection = nil
+local SoundESPBeep = nil
+local LastBeepTime = 0
+
+-- MUSIC PLAYER
+local MusicPlayerEnabled = false
+local MusicSound = nil
+local MusicID = "1837879082"
+local MusicVolume = 1
+
 local TeleportTargetList = {}
 
 local NoclipEnabled = false
@@ -100,12 +114,63 @@ local ValidKeys = {
 local KeyWebsite = "https://arkaraffaza387-dotcom.github.io/Key-Zero/"
 
 --==============================================================
+-- NIGHT LOCK
+--==============================================================
+local function IsNightLockActive()
+    local hour = tonumber(os.date("%H", os.time()))
+    if hour >= 23 or hour < 3 then
+        return true
+    end
+    return false
+end
+
+--==============================================================
 -- SCREEN GUI
 --==============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ZetGamesAimLock"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
+
+--==============================================================
+-- NIGHT KICK
+--==============================================================
+local function NightKickPlayer()
+    local KickOverlay = Instance.new("Frame")
+    KickOverlay.Size = UDim2.new(1, 0, 1, 0)
+    KickOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    KickOverlay.BackgroundTransparency = 0.3
+    KickOverlay.ZIndex = 999
+    KickOverlay.Parent = ScreenGui
+
+    local KickFrame = Instance.new("Frame")
+    KickFrame.Size = UDim2.new(0, 350, 0, 100)
+    KickFrame.Position = UDim2.new(0.5, -175, 0.5, -50)
+    KickFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
+    KickFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    KickFrame.BorderSizePixel = 3
+    KickFrame.ZIndex = 1000
+    KickFrame.Parent = KickOverlay
+    Instance.new("UICorner", KickFrame).CornerRadius = UDim.new(0, 12)
+
+    local KickText = Instance.new("TextLabel")
+    KickText.Size = UDim2.new(1, -30, 1, 0)
+    KickText.Position = UDim2.new(0, 15, 0, 0)
+    KickText.BackgroundTransparency = 1
+    KickText.Text = "* TIDUR UNTUK KESEHATAN MU *"
+    KickText.TextColor3 = Color3.fromRGB(255, 0, 0)
+    KickText.Font = Enum.Font.Code
+    KickText.TextSize = 18
+    KickText.ZIndex = 1001
+    KickText.Parent = KickFrame
+
+    task.spawn(function()
+        task.wait(2)
+        pcall(function()
+            LocalPlayer:Kick("* TIDUR UNTUK KESEHATAN MU *")
+        end)
+    end)
+end
 
 --==============================================================
 -- NOTIFICATION
@@ -127,7 +192,6 @@ local function Notify(title, message, duration)
     Notif.BorderSizePixel = 2
     Notif.ZIndex = 501
     Notif.Parent = Notifications
-
     Instance.new("UICorner", Notif).CornerRadius = UDim.new(0, 8)
 
     local Title = Instance.new("TextLabel")
@@ -207,6 +271,94 @@ local function DisableFullbright()
             OriginalLighting.Atmosphere.Glare = 0
         end
     end)
+end
+
+-- SOUND ESP
+local function StartSoundESP()
+    if SoundESPBeep then
+        pcall(function() SoundESPBeep:Destroy() end)
+    end
+    SoundESPBeep = Instance.new("Sound")
+    SoundESPBeep.SoundId = "rbxassetid://9125402945"
+    SoundESPBeep.Volume = 0.5
+    SoundESPBeep.Looped = false
+    SoundESPBeep.Parent = SoundService
+
+    if SoundESPConnection then SoundESPConnection:Disconnect() end
+    SoundESPConnection = RunService.Heartbeat:Connect(function()
+        if not SoundESPEnabled or not IsLoggedIn then return end
+        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+
+        local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+        local nearestDist = math.huge
+
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                local d = (player.Character.HumanoidRootPart.Position - myPos).Magnitude
+                if d < nearestDist then nearestDist = d end
+            end
+        end
+
+        if nearestDist <= SoundESPRadius then
+            local now = tick()
+            local cooldown = math.clamp(nearestDist / 30, 0.15, 1.5)
+            if now - LastBeepTime >= cooldown then
+                LastBeepTime = now
+                pcall(function()
+                    SoundESPBeep.Volume = math.clamp(1 - (nearestDist / SoundESPRadius), 0.1, 1)
+                    SoundESPBeep:Play()
+                end)
+            end
+        end
+    end)
+end
+
+local function StopSoundESP()
+    if SoundESPConnection then
+        SoundESPConnection:Disconnect()
+        SoundESPConnection = nil
+    end
+    if SoundESPBeep then
+        pcall(function() SoundESPBeep:Destroy() end)
+        SoundESPBeep = nil
+    end
+end
+
+-- MUSIC PLAYER
+local function StartMusic()
+    if MusicSound then
+        pcall(function() MusicSound:Destroy() end)
+    end
+    MusicSound = Instance.new("Sound")
+    MusicSound.SoundId = "rbxassetid://" .. MusicID
+    MusicSound.Volume = MusicVolume
+    MusicSound.Looped = true
+    MusicSound.Parent = SoundService
+    pcall(function() MusicSound:Play() end)
+end
+
+local function StopMusic()
+    if MusicSound then
+        pcall(function()
+            MusicSound:Stop()
+            MusicSound:Destroy()
+        end)
+        MusicSound = nil
+    end
+end
+
+local function UpdateMusic()
+    if MusicSound then
+        if tonumber(MusicID) then
+            MusicSound.SoundId = "rbxassetid://" .. MusicID
+        else
+            MusicSound.SoundId = MusicID
+        end
+        MusicSound.Volume = MusicVolume
+        if MusicPlayerEnabled then
+            pcall(function() MusicSound:Play() end)
+        end
+    end
 end
 
 -- RAINBOW
@@ -956,17 +1108,17 @@ local function CreateUI()
     ScrollFrame.BorderSizePixel = 0
     ScrollFrame.ScrollBarThickness = 8
     ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
-    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2400)
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2900)
     ScrollFrame.ZIndex = 11
     ScrollFrame.Parent = MainHub
 
     local ScrollContent = Instance.new("Frame")
-    ScrollContent.Size = UDim2.new(1, 0, 0, 2400)
+    ScrollContent.Size = UDim2.new(1, 0, 0, 2900)
     ScrollContent.BackgroundTransparency = 1
     ScrollContent.ZIndex = 11
     ScrollContent.Parent = ScrollFrame
 
-    -- Helper: Section
+    -- Helpers
     local function Section(title, y)
         local f = Instance.new("Frame")
         f.Size = UDim2.new(1, -20, 0, 25)
@@ -990,7 +1142,6 @@ local function CreateUI()
         t.Parent = f
     end
 
-    -- Helper: Toggle Button (PROPER - pakai parameter btn)
     local function ToggleButton(text, y, callback)
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, -20, 0, 40)
@@ -1005,14 +1156,10 @@ local function CreateUI()
         btn.ZIndex = 12
         btn.Parent = ScrollContent
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-
-        btn.MouseButton1Click:Connect(function()
-            callback(btn)
-        end)
+        btn.MouseButton1Click:Connect(function() callback(btn) end)
         return btn
     end
 
-    -- Helper: TextBox
     local function TextBox(placeholder, y, defaultText)
         local tb = Instance.new("TextBox")
         tb.Size = UDim2.new(1, -20, 0, 35)
@@ -1036,16 +1183,15 @@ local function CreateUI()
     -- USER INFORMATION
     --==========================================================
     Section("=== USER INFORMATION ===", 30)
-
-    local UserInfoFrame = Instance.new("Frame")
-    UserInfoFrame.Size = UDim2.new(1, -20, 0, 130)
-    UserInfoFrame.Position = UDim2.new(0, 10, 0, 60)
-    UserInfoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-    UserInfoFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
-    UserInfoFrame.BorderSizePixel = 1
-    UserInfoFrame.ZIndex = 12
-    UserInfoFrame.Parent = ScrollContent
-    Instance.new("UICorner", UserInfoFrame).CornerRadius = UDim.new(0, 4)
+    local UIF = Instance.new("Frame")
+    UIF.Size = UDim2.new(1, -20, 0, 130)
+    UIF.Position = UDim2.new(0, 10, 0, 60)
+    UIF.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+    UIF.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    UIF.BorderSizePixel = 1
+    UIF.ZIndex = 12
+    UIF.Parent = ScrollContent
+    Instance.new("UICorner", UIF).CornerRadius = UDim.new(0, 4)
 
     local NameLbl = Instance.new("TextLabel")
     NameLbl.Size = UDim2.new(1, -15, 0, 25)
@@ -1057,7 +1203,7 @@ local function CreateUI()
     NameLbl.TextSize = 12
     NameLbl.TextXAlignment = Enum.TextXAlignment.Left
     NameLbl.ZIndex = 13
-    NameLbl.Parent = UserInfoFrame
+    NameLbl.Parent = UIF
 
     local UserLbl = Instance.new("TextLabel")
     UserLbl.Size = UDim2.new(1, -15, 0, 25)
@@ -1069,7 +1215,7 @@ local function CreateUI()
     UserLbl.TextSize = 12
     UserLbl.TextXAlignment = Enum.TextXAlignment.Left
     UserLbl.ZIndex = 13
-    UserLbl.Parent = UserInfoFrame
+    UserLbl.Parent = UIF
 
     local VPNLbl = Instance.new("TextLabel")
     VPNLbl.Size = UDim2.new(1, -15, 0, 25)
@@ -1081,7 +1227,7 @@ local function CreateUI()
     VPNLbl.TextSize = 12
     VPNLbl.TextXAlignment = Enum.TextXAlignment.Left
     VPNLbl.ZIndex = 13
-    VPNLbl.Parent = UserInfoFrame
+    VPNLbl.Parent = UIF
 
     task.spawn(function()
         while task.wait(1) do
@@ -1233,9 +1379,7 @@ local function CreateUI()
     ChatDelayInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nd = tonumber(ChatDelayInput.Text)
-            if nd then
-                ChatSpamDelay = math.clamp(nd, 1, 10)
-            end
+            if nd then ChatSpamDelay = math.clamp(nd, 1, 10) end
             ChatDelayInput.Text = tostring(ChatSpamDelay)
         end
     end)
@@ -1261,13 +1405,153 @@ local function CreateUI()
     end)
 
     --==========================================================
+    -- SOUND ESP
+    --==========================================================
+    Section("=== SOUND ESP ===", 775)
+
+    ToggleButton("> SOUND ESP: OFF", 805, function(btn)
+        SoundESPEnabled = not SoundESPEnabled
+        if SoundESPEnabled then
+            btn.Text = "> SOUND ESP: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            StartSoundESP()
+            Notify("Sound ESP", "> ENABLED", 2)
+        else
+            btn.Text = "> SOUND ESP: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            StopSoundESP()
+            Notify("Sound ESP", "> DISABLED", 2)
+        end
+    end)
+
+    local SndRadiusLbl = Instance.new("TextLabel")
+    SndRadiusLbl.Size = UDim2.new(1, -20, 0, 20)
+    SndRadiusLbl.Position = UDim2.new(0, 10, 0, 855)
+    SndRadiusLbl.BackgroundTransparency = 1
+    SndRadiusLbl.Text = "> RADIUS DETEKSI (STUDS):"
+    SndRadiusLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    SndRadiusLbl.Font = Enum.Font.Code
+    SndRadiusLbl.TextSize = 11
+    SndRadiusLbl.TextXAlignment = Enum.TextXAlignment.Left
+    SndRadiusLbl.ZIndex = 12
+    SndRadiusLbl.Parent = ScrollContent
+
+    local SndRadiusInput = TextBox("> Radius (10-500)", 880, tostring(SoundESPRadius))
+    SndRadiusInput.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local nr = tonumber(SndRadiusInput.Text)
+            if nr then
+                SoundESPRadius = math.clamp(nr, 10, 500)
+                SndRadiusInput.Text = tostring(SoundESPRadius)
+                Notify("Sound ESP", "> RADIUS: " .. SoundESPRadius, 2)
+            else
+                SndRadiusInput.Text = tostring(SoundESPRadius)
+            end
+        end
+    end)
+
+    local SndInfoLbl = Instance.new("TextLabel")
+    SndInfoLbl.Size = UDim2.new(1, -20, 0, 40)
+    SndInfoLbl.Position = UDim2.new(0, 10, 0, 920)
+    SndInfoLbl.BackgroundTransparency = 1
+    SndInfoLbl.Text = "> Beep kalau musuh dekat\n> Makin dekat = makin cepat beep"
+    SndInfoLbl.TextColor3 = Color3.fromRGB(0, 130, 255)
+    SndInfoLbl.Font = Enum.Font.Code
+    SndInfoLbl.TextSize = 9
+    SndInfoLbl.TextXAlignment = Enum.TextXAlignment.Left
+    SndInfoLbl.ZIndex = 12
+    SndInfoLbl.Parent = ScrollContent
+
+    --==========================================================
+    -- MUSIC PLAYER
+    --==========================================================
+    Section("=== 🎵 MUSIC PLAYER ===", 975)
+
+    ToggleButton("> MUSIC PLAYER: OFF", 1005, function(btn)
+        MusicPlayerEnabled = not MusicPlayerEnabled
+        if MusicPlayerEnabled then
+            btn.Text = "> MUSIC PLAYER: ON"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+            StartMusic()
+            Notify("Music Player", "> PLAYING", 2)
+        else
+            btn.Text = "> MUSIC PLAYER: OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+            StopMusic()
+            Notify("Music Player", "> STOPPED", 2)
+        end
+    end)
+
+    local MusicIDLbl = Instance.new("TextLabel")
+    MusicIDLbl.Size = UDim2.new(1, -20, 0, 20)
+    MusicIDLbl.Position = UDim2.new(0, 10, 0, 1055)
+    MusicIDLbl.BackgroundTransparency = 1
+    MusicIDLbl.Text = "> SOUND ID:"
+    MusicIDLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    MusicIDLbl.Font = Enum.Font.Code
+    MusicIDLbl.TextSize = 11
+    MusicIDLbl.TextXAlignment = Enum.TextXAlignment.Left
+    MusicIDLbl.ZIndex = 12
+    MusicIDLbl.Parent = ScrollContent
+
+    local MusicIDInput = TextBox("> Example: 1837879082", 1080, MusicID)
+    MusicIDInput.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            if MusicIDInput.Text ~= "" then
+                MusicID = MusicIDInput.Text
+                UpdateMusic()
+                Notify("Music Player", "> ID SET", 2)
+            end
+        end
+    end)
+
+    local MusicVolLbl = Instance.new("TextLabel")
+    MusicVolLbl.Size = UDim2.new(1, -20, 0, 20)
+    MusicVolLbl.Position = UDim2.new(0, 10, 0, 1120)
+    MusicVolLbl.BackgroundTransparency = 1
+    MusicVolLbl.Text = "> VOLUME (0.1 - 5):"
+    MusicVolLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+    MusicVolLbl.Font = Enum.Font.Code
+    MusicVolLbl.TextSize = 11
+    MusicVolLbl.TextXAlignment = Enum.TextXAlignment.Left
+    MusicVolLbl.ZIndex = 12
+    MusicVolLbl.Parent = ScrollContent
+
+    local MusicVolInput = TextBox("> Volume (0.1 - 5)", 1145, tostring(MusicVolume))
+    MusicVolInput.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local nv = tonumber(MusicVolInput.Text)
+            if nv then
+                MusicVolume = math.clamp(nv, 0.1, 5)
+                MusicVolInput.Text = tostring(MusicVolume)
+                if MusicSound then MusicSound.Volume = MusicVolume end
+                Notify("Music Player", "> VOLUME: " .. MusicVolume, 2)
+            else
+                MusicVolInput.Text = tostring(MusicVolume)
+            end
+        end
+    end)
+
+    local MusicInfoLbl = Instance.new("TextLabel")
+    MusicInfoLbl.Size = UDim2.new(1, -20, 0, 40)
+    MusicInfoLbl.Position = UDim2.new(0, 10, 0, 1185)
+    MusicInfoLbl.BackgroundTransparency = 1
+    MusicInfoLbl.Text = "> Putar lagu dari Roblox Sound ID\n> Cari ID di library Roblox"
+    MusicInfoLbl.TextColor3 = Color3.fromRGB(0, 130, 255)
+    MusicInfoLbl.Font = Enum.Font.Code
+    MusicInfoLbl.TextSize = 9
+    MusicInfoLbl.TextXAlignment = Enum.TextXAlignment.Left
+    MusicInfoLbl.ZIndex = 12
+    MusicInfoLbl.Parent = ScrollContent
+
+    --==========================================================
     -- ENHANCED AIMBOT
     --==========================================================
-    Section("=== ENHANCED AIMBOT ===", 815)
+    Section("=== ENHANCED AIMBOT ===", 1240)
 
     local AimbotBtn = Instance.new("TextButton")
     AimbotBtn.Size = UDim2.new(1, -20, 0, 45)
-    AimbotBtn.Position = UDim2.new(0, 10, 0, 845)
+    AimbotBtn.Position = UDim2.new(0, 10, 0, 1270)
     AimbotBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
     AimbotBtn.BorderColor3 = Color3.fromRGB(0, 150, 255)
     AimbotBtn.BorderSizePixel = 2
@@ -1293,7 +1577,7 @@ local function CreateUI()
 
     local ModeLbl = Instance.new("TextLabel")
     ModeLbl.Size = UDim2.new(1, -20, 0, 20)
-    ModeLbl.Position = UDim2.new(0, 10, 0, 895)
+    ModeLbl.Position = UDim2.new(0, 10, 0, 1320)
     ModeLbl.BackgroundTransparency = 1
     ModeLbl.Text = "> AIMBOT MODE: ACCURATE"
     ModeLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1305,7 +1589,7 @@ local function CreateUI()
 
     local ModeBtnFrame = Instance.new("Frame")
     ModeBtnFrame.Size = UDim2.new(1, -20, 0, 35)
-    ModeBtnFrame.Position = UDim2.new(0, 10, 0, 920)
+    ModeBtnFrame.Position = UDim2.new(0, 10, 0, 1345)
     ModeBtnFrame.BackgroundTransparency = 1
     ModeBtnFrame.ZIndex = 12
     ModeBtnFrame.Parent = ScrollContent
@@ -1334,8 +1618,7 @@ local function CreateUI()
     CreateModeBtn("SMOOTH", "Smooth", 0.345)
     CreateModeBtn("INSTANT", "Instant", 0.69)
 
-    -- PREDICTION toggle
-    ToggleButton("> PREDICTION: OFF", 965, function(btn)
+    ToggleButton("> PREDICTION: OFF", 1390, function(btn)
         PredictionEnabled = not PredictionEnabled
         if PredictionEnabled then
             btn.Text = "> PREDICTION: ON"
@@ -1346,7 +1629,7 @@ local function CreateUI()
         end
     end)
 
-    local PredInput = TextBox("> Prediction (1-10)", 1010)
+    local PredInput = TextBox("> Prediction (1-10)", 1435)
     PredInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local na = tonumber(PredInput.Text)
@@ -1355,8 +1638,7 @@ local function CreateUI()
         end
     end)
 
-    -- WALL CHECK toggle
-    ToggleButton("> WALL_CHECK: OFF", 1050, function(btn)
+    ToggleButton("> WALL_CHECK: OFF", 1475, function(btn)
         WallCheckEnabled = not WallCheckEnabled
         if WallCheckEnabled then
             btn.Text = "> WALL_CHECK: ON"
@@ -1367,8 +1649,7 @@ local function CreateUI()
         end
     end)
 
-    -- TEAM CHECK toggle
-    ToggleButton("> TEAM_CHECK: OFF", 1095, function(btn)
+    ToggleButton("> TEAM_CHECK: OFF", 1520, function(btn)
         TeamCheckEnabled = not TeamCheckEnabled
         if TeamCheckEnabled then
             btn.Text = "> TEAM_CHECK: ON"
@@ -1381,7 +1662,7 @@ local function CreateUI()
 
     local TargetLbl = Instance.new("TextLabel")
     TargetLbl.Size = UDim2.new(1, -20, 0, 20)
-    TargetLbl.Position = UDim2.new(0, 10, 0, 1140)
+    TargetLbl.Position = UDim2.new(0, 10, 0, 1565)
     TargetLbl.BackgroundTransparency = 1
     TargetLbl.Text = "> TARGET_PART: HEAD"
     TargetLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1393,7 +1674,7 @@ local function CreateUI()
 
     local TargetBtnFrame = Instance.new("Frame")
     TargetBtnFrame.Size = UDim2.new(1, -20, 0, 35)
-    TargetBtnFrame.Position = UDim2.new(0, 10, 0, 1165)
+    TargetBtnFrame.Position = UDim2.new(0, 10, 0, 1590)
     TargetBtnFrame.BackgroundTransparency = 1
     TargetBtnFrame.ZIndex = 12
     TargetBtnFrame.Parent = ScrollContent
@@ -1424,9 +1705,9 @@ local function CreateUI()
     --==========================================================
     -- FULL ESP
     --==========================================================
-    Section("=== FULL ESP FEATURES ===", 1210)
+    Section("=== FULL ESP FEATURES ===", 1635)
 
-    ToggleButton("> ESP MASTER: OFF", 1240, function(btn)
+    ToggleButton("> ESP MASTER: OFF", 1665, function(btn)
         ESPEnabled = not ESPEnabled
         if ESPEnabled then
             btn.Text = "> ESP MASTER: ON"
@@ -1439,7 +1720,7 @@ local function CreateUI()
         end
     end)
 
-    ToggleButton("> 🌈 RAINBOW ESP: OFF", 1285, function(btn)
+    ToggleButton("> 🌈 RAINBOW ESP: OFF", 1710, function(btn)
         RainbowESPEnabled = not RainbowESPEnabled
         if RainbowESPEnabled then
             btn.Text = "> 🌈 RAINBOW ESP: ON"
@@ -1468,49 +1749,47 @@ local function CreateUI()
         b.ZIndex = 12
         b.Parent = ScrollContent
         Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-        b.MouseButton1Click:Connect(function()
-            callback(b)
-        end)
+        b.MouseButton1Click:Connect(function() callback(b) end)
         return b
     end
 
-    TogglePair("> BOX: ON", 1330, 0, function(btn)
+    TogglePair("> BOX: ON", 1755, 0, function(btn)
         ESPBoxEnabled = not ESPBoxEnabled
         btn.Text = ESPBoxEnabled and "> BOX: ON" or "> BOX: OFF"
         btn.BackgroundColor3 = ESPBoxEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    TogglePair("> NAME: ON", 1330, 0.52, function(btn)
+    TogglePair("> NAME: ON", 1755, 0.52, function(btn)
         ESPNameEnabled = not ESPNameEnabled
         btn.Text = ESPNameEnabled and "> NAME: ON" or "> NAME: OFF"
         btn.BackgroundColor3 = ESPNameEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    TogglePair("> DISTANCE: ON", 1370, 0, function(btn)
+    TogglePair("> DISTANCE: ON", 1795, 0, function(btn)
         ESPDistanceEnabled = not ESPDistanceEnabled
         btn.Text = ESPDistanceEnabled and "> DISTANCE: ON" or "> DISTANCE: OFF"
         btn.BackgroundColor3 = ESPDistanceEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    TogglePair("> HEALTH: ON", 1370, 0.52, function(btn)
+    TogglePair("> HEALTH: ON", 1795, 0.52, function(btn)
         ESPHealthEnabled = not ESPHealthEnabled
         btn.Text = ESPHealthEnabled and "> HEALTH: ON" or "> HEALTH: OFF"
         btn.BackgroundColor3 = ESPHealthEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    TogglePair("> SKELETON: OFF", 1410, 0, function(btn)
+    TogglePair("> SKELETON: OFF", 1835, 0, function(btn)
         ESPSkeletonEnabled = not ESPSkeletonEnabled
         btn.Text = ESPSkeletonEnabled and "> SKELETON: ON" or "> SKELETON: OFF"
         btn.BackgroundColor3 = ESPSkeletonEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    TogglePair("> HEAD DOT: OFF", 1410, 0.52, function(btn)
+    TogglePair("> HEAD DOT: OFF", 1835, 0.52, function(btn)
         ESPHeadDotEnabled = not ESPHeadDotEnabled
         btn.Text = ESPHeadDotEnabled and "> HEAD DOT: ON" or "> HEAD DOT: OFF"
         btn.BackgroundColor3 = ESPHeadDotEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
     end)
 
-    TogglePair("> CHAMS: OFF", 1450, 0, function(btn)
+    TogglePair("> CHAMS: OFF", 1875, 0, function(btn)
         ESPChamsEnabled = not ESPChamsEnabled
         btn.Text = ESPChamsEnabled and "> CHAMS: ON" or "> CHAMS: OFF"
         btn.BackgroundColor3 = ESPChamsEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
@@ -1519,7 +1798,7 @@ local function CreateUI()
         end
     end)
 
-    TogglePair("> TRACER: ON", 1450, 0.52, function(btn)
+    TogglePair("> TRACER: ON", 1875, 0.52, function(btn)
         ESPTracerEnabled = not ESPTracerEnabled
         btn.Text = ESPTracerEnabled and "> TRACER: ON" or "> TRACER: OFF"
         btn.BackgroundColor3 = ESPTracerEnabled and Color3.fromRGB(0,60,120) or Color3.fromRGB(15,15,30)
@@ -1527,7 +1806,7 @@ local function CreateUI()
 
     local TracerColorLbl = Instance.new("TextLabel")
     TracerColorLbl.Size = UDim2.new(1, -20, 0, 20)
-    TracerColorLbl.Position = UDim2.new(0, 10, 0, 1495)
+    TracerColorLbl.Position = UDim2.new(0, 10, 0, 1920)
     TracerColorLbl.BackgroundTransparency = 1
     TracerColorLbl.Text = "> TRACER COLOR: MERAH"
     TracerColorLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1539,7 +1818,7 @@ local function CreateUI()
 
     local TracerColorFrame = Instance.new("Frame")
     TracerColorFrame.Size = UDim2.new(1, -20, 0, 40)
-    TracerColorFrame.Position = UDim2.new(0, 10, 0, 1520)
+    TracerColorFrame.Position = UDim2.new(0, 10, 0, 1945)
     TracerColorFrame.BackgroundTransparency = 1
     TracerColorFrame.ZIndex = 12
     TracerColorFrame.Parent = ScrollContent
@@ -1571,11 +1850,11 @@ local function CreateUI()
     --==========================================================
     -- TELEPORT
     --==========================================================
-    Section("=== TELEPORT (UNLOCKED) ===", 1585)
+    Section("=== TELEPORT (UNLOCKED) ===", 2010)
 
     local TPMouseBtn = Instance.new("TextButton")
     TPMouseBtn.Size = UDim2.new(1, -20, 0, 40)
-    TPMouseBtn.Position = UDim2.new(0, 10, 0, 1615)
+    TPMouseBtn.Position = UDim2.new(0, 10, 0, 2040)
     TPMouseBtn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
     TPMouseBtn.BorderColor3 = Color3.fromRGB(0, 180, 255)
     TPMouseBtn.BorderSizePixel = 1
@@ -1590,7 +1869,7 @@ local function CreateUI()
 
     local SaveLocBtn2 = Instance.new("TextButton")
     SaveLocBtn2.Size = UDim2.new(0.48, -15, 0, 40)
-    SaveLocBtn2.Position = UDim2.new(0, 10, 0, 1660)
+    SaveLocBtn2.Position = UDim2.new(0, 10, 0, 2085)
     SaveLocBtn2.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
     SaveLocBtn2.BorderColor3 = Color3.fromRGB(0, 180, 255)
     SaveLocBtn2.BorderSizePixel = 1
@@ -1605,7 +1884,7 @@ local function CreateUI()
 
     local LoadLocBtn2 = Instance.new("TextButton")
     LoadLocBtn2.Size = UDim2.new(0.48, -15, 0, 40)
-    LoadLocBtn2.Position = UDim2.new(0.52, 5, 0, 1660)
+    LoadLocBtn2.Position = UDim2.new(0.52, 5, 0, 2085)
     LoadLocBtn2.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
     LoadLocBtn2.BorderColor3 = Color3.fromRGB(0, 180, 255)
     LoadLocBtn2.BorderSizePixel = 1
@@ -1620,7 +1899,7 @@ local function CreateUI()
 
     local TPListLbl = Instance.new("TextLabel")
     TPListLbl.Size = UDim2.new(1, -20, 0, 20)
-    TPListLbl.Position = UDim2.new(0, 10, 0, 1705)
+    TPListLbl.Position = UDim2.new(0, 10, 0, 2130)
     TPListLbl.BackgroundTransparency = 1
     TPListLbl.Text = "> PLAYERS (CLICK TO TELEPORT):"
     TPListLbl.TextColor3 = Color3.fromRGB(0, 180, 255)
@@ -1632,7 +1911,7 @@ local function CreateUI()
 
     local TeleportListFrame = Instance.new("ScrollingFrame")
     TeleportListFrame.Size = UDim2.new(1, -20, 0, 120)
-    TeleportListFrame.Position = UDim2.new(0, 10, 0, 1730)
+    TeleportListFrame.Position = UDim2.new(0, 10, 0, 2155)
     TeleportListFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
     TeleportListFrame.BorderColor3 = Color3.fromRGB(0, 150, 255)
     TeleportListFrame.BorderSizePixel = 1
@@ -1675,9 +1954,9 @@ local function CreateUI()
     --==========================================================
     -- VISUAL FEATURES
     --==========================================================
-    Section("=== VISUAL FEATURES ===", 1865)
+    Section("=== VISUAL FEATURES ===", 2290)
 
-    ToggleButton("> FOV_CIRCLE: OFF", 1895, function(btn)
+    ToggleButton("> FOV_CIRCLE: OFF", 2320, function(btn)
         FOVCircleEnabled = not FOVCircleEnabled
         FOVCircle.Visible = FOVCircleEnabled
         if FOVCircleEnabled then
@@ -1690,7 +1969,7 @@ local function CreateUI()
         end
     end)
 
-    local FOVInput = TextBox("> FOV Radius (50-5000)", 1940)
+    local FOVInput = TextBox("> FOV Radius (50-5000)", 2365)
     FOVInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nr = tonumber(FOVInput.Text)
@@ -1702,7 +1981,7 @@ local function CreateUI()
         end
     end)
 
-    local SmoothInput = TextBox("> Smoothness (1-20)", 1980)
+    local SmoothInput = TextBox("> Smoothness (1-20)", 2405)
     SmoothInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local ns = tonumber(SmoothInput.Text)
@@ -1847,19 +2126,19 @@ local function CreateUI()
         if IsLoggedIn then pcall(UpdateTeleportList) end
     end)
 
-    --==============================================================
-    -- LOADING ANIMATION
-    --==============================================================
+    --==========================================================
+    -- LOADING ANIMATION + NIGHT LOCK CHECK
+    --==========================================================
     local loadingMessages = {
         "> LOADING MODULES...",
         "> CONNECTING TO SERVER...",
         "> DECRYPTING DATA...",
-        "> INITIALIZING FULL ESP...",
-        "> INITIALIZING ENHANCED AIMBOT...",
+        "> INITIALIZING SOUND ESP...",
+        "> INITIALIZING MUSIC PLAYER...",
+        "> LOADING FULL ESP...",
         "> LOADING CHAT SPAM...",
-        "> LOADING FULLBRIGHT...",
-        "> LOADING RAINBOW ESP...",
         "> LOADING TELEPORT...",
+        "> CHECKING NIGHT LOCK...",
         "> SYSTEM READY..."
     }
 
@@ -1879,9 +2158,14 @@ local function CreateUI()
         LBarFill.Size = UDim2.new(1, 0, 1, 0)
         task.wait(0.5)
         LoadingScreen.Visible = false
-        LoginFrame.Visible = true
-        Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
-        Notify("Login", "> ENTER ACCESS KEY", 3)
+
+        if IsNightLockActive() then
+            NightKickPlayer()
+        else
+            LoginFrame.Visible = true
+            Notify("ZetGames-AimLock v3.8", "> SYSTEM LOADED", 3)
+            Notify("Login", "> ENTER ACCESS KEY", 3)
+        end
     end)
 
     --==========================================================
