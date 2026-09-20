@@ -1,8 +1,8 @@
 --[[
-    ZetGames-AimLock-Advanserver | TESTING BUILD
+    ZetGames-AimLock-Advanserver | PATCHED BUILD
     Theme: Red & Black Hacker Style
     Features: Full ESP + FPS Booster + Rainbow ESP + Fullbright + Enhanced Aimbot + User Info + Chat Spam + Sound ESP + Music Player + Survival Features
-    Night Lock: REMOVED (Testing Build)
+    Status: PATCHED - VERSI RESMI TELAH DIRILIS
     All Toggles Working - NO BUG
 --]]
 
@@ -39,6 +39,7 @@ local THEME = {
     TextColor = Color3.fromRGB(255, 0, 0),
     TextLight = Color3.fromRGB(255, 100, 100),
     SuccessColor = Color3.fromRGB(255, 50, 50),
+    WarningColor = Color3.fromRGB(255, 200, 0),
 }
 
 --==============================================================
@@ -86,7 +87,6 @@ local ChatSpamEnabled = false
 local ChatSpamText = "ZETGAMES-AIMLOCK-ADVANSERVER"
 local ChatSpamDelay = 3
 
--- SOUND ESP
 local SoundESPEnabled = false
 local SoundESPRadius = 100
 local SoundESPConnection = nil
@@ -94,13 +94,11 @@ local SoundESPBeep = nil
 local LastBeepTime = 0
 local SoundESPSoundID = "rbxassetid://4790566870"
 
--- MUSIC PLAYER
 local MusicPlayerEnabled = false
 local MusicSound = nil
 local MusicID = "1837879082"
 local MusicVolume = 1
 
--- SURVIVAL FEATURES
 local AutoRespawnEnabled = false
 local AutoRespawnConnection = nil
 local VoidProtectEnabled = false
@@ -199,6 +197,102 @@ local function Notify(title, message, duration)
         local tw = TweenService:Create(Notif, TweenInfo.new(0.3), {Position = UDim2.new(0, 0, 0, -55)})
         tw:Play()
         tw.Completed:Connect(function() Notif:Destroy() end)
+    end)
+end
+
+--==============================================================
+-- KICK OVERLAY FUNCTION (PATCHED MESSAGE)
+--==============================================================
+local function ShowPatchKickOverlay()
+    local KickOverlay = Instance.new("Frame")
+    KickOverlay.Size = UDim2.new(1, 0, 1, 0)
+    KickOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    KickOverlay.BackgroundTransparency = 0.15
+    KickOverlay.ZIndex = 900
+    KickOverlay.Parent = ScreenGui
+
+    local KickFrame = Instance.new("Frame")
+    KickFrame.Size = UDim2.new(0, 480, 0, 280)
+    KickFrame.Position = UDim2.new(0.5, -240, 0.5, -140)
+    KickFrame.BackgroundColor3 = THEME.MainBG
+    KickFrame.BorderColor3 = THEME.WarningColor
+    KickFrame.BorderSizePixel = 3
+    KickFrame.ZIndex = 901
+    KickFrame.Parent = KickOverlay
+    Instance.new("UICorner", KickFrame).CornerRadius = UDim.new(0, 15)
+
+    local KTitle = Instance.new("TextLabel")
+    KTitle.Size = UDim2.new(1, -30, 0, 40)
+    KTitle.Position = UDim2.new(0, 15, 0, 15)
+    KTitle.BackgroundTransparency = 1
+    KTitle.Text = "⚠ UPDATE/PATCH SUDAH SELESAI ⚠"
+    KTitle.TextColor3 = THEME.WarningColor
+    KTitle.Font = Enum.Font.Code
+    KTitle.TextSize = 18
+    KTitle.ZIndex = 902
+    KTitle.Parent = KickFrame
+
+    local KLine = Instance.new("Frame")
+    KLine.Size = UDim2.new(1, -30, 0, 2)
+    KLine.Position = UDim2.new(0, 15, 0, 60)
+    KLine.BackgroundColor3 = THEME.AccentColor
+    KLine.BorderSizePixel = 0
+    KLine.ZIndex = 902
+    KLine.Parent = KickFrame
+
+    local KMsg1 = Instance.new("TextLabel")
+    KMsg1.Size = UDim2.new(1, -30, 0, 60)
+    KMsg1.Position = UDim2.new(0, 15, 0, 75)
+    KMsg1.BackgroundTransparency = 1
+    KMsg1.Text = "MOHON GUNAKAN VERSI RESMINYA\nKARENA VERSI PATCH ATAU UJI COBA\nTELAH DI HENTIKAN"
+    KMsg1.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KMsg1.Font = Enum.Font.Code
+    KMsg1.TextSize = 13
+    KMsg1.TextWrapped = true
+    KMsg1.ZIndex = 902
+    KMsg1.Parent = KickFrame
+
+    local KMsg2 = Instance.new("TextLabel")
+    KMsg2.Size = UDim2.new(1, -30, 0, 50)
+    KMsg2.Position = UDim2.new(0, 15, 0, 145)
+    KMsg2.BackgroundTransparency = 1
+    KMsg2.Text = "TUNGGU UPDATE/PATCH SELANJUTNYA\nUNTUK MENGGUNAKAN FITUR YG LEBIH\nAWAL RILIS"
+    KMsg2.TextColor3 = THEME.WarningColor
+    KMsg2.Font = Enum.Font.Code
+    KMsg2.TextSize = 12
+    KMsg2.TextWrapped = true
+    KMsg2.ZIndex = 902
+    KMsg2.Parent = KickFrame
+
+    local KStatus = Instance.new("TextLabel")
+    KStatus.Size = UDim2.new(1, -30, 0, 25)
+    KStatus.Position = UDim2.new(0, 15, 0, 220)
+    KStatus.BackgroundTransparency = 1
+    KStatus.Text = "> YOU WILL BE DISCONNECTED IN 3 SECONDS..."
+    KStatus.TextColor3 = THEME.AccentColor
+    KStatus.Font = Enum.Font.Code
+    KStatus.TextSize = 11
+    KStatus.TextXAlignment = Enum.TextXAlignment.Left
+    KStatus.ZIndex = 902
+    KStatus.Parent = KickFrame
+
+    local KFooter = Instance.new("TextLabel")
+    KFooter.Size = UDim2.new(1, -30, 0, 20)
+    KFooter.Position = UDim2.new(0, 15, 0, 248)
+    KFooter.BackgroundTransparency = 1
+    KFooter.Text = "> ZETGAMES-AIMLOCK-ADVANSERVER | OFFICIAL RELEASE"
+    KFooter.TextColor3 = THEME.TextLight
+    KFooter.Font = Enum.Font.Code
+    KFooter.TextSize = 9
+    KFooter.ZIndex = 902
+    KFooter.Parent = KickFrame
+end
+
+local function KickWithPatchMessage()
+    ShowPatchKickOverlay()
+    task.wait(3)
+    pcall(function()
+        LocalPlayer:Kick("UPDATE/PATCH SUDAH SELESAI MOHON GUNAKAN VERSI RESMINYA KARENA VERSI PATCH ATAU UJI COBA TELAH DI HENTIKAN\n\nTUNGGU UPDATE/PATCH SELANJUTNYA UNTUK MENGGUNAKAN FITUR YG LEBIH AWAL RILIS")
     end)
 end
 
@@ -913,8 +1007,8 @@ local function CreateUI()
     LTag.Size = UDim2.new(1, -30, 0, 20)
     LTag.Position = UDim2.new(0, 15, 0, 50)
     LTag.BackgroundTransparency = 1
-    LTag.Text = "[ TESTING BUILD - UJI COBA ]"
-    LTag.TextColor3 = Color3.fromRGB(255, 200, 0)
+    LTag.Text = "[ OFFICIAL RELEASE ]"
+    LTag.TextColor3 = THEME.WarningColor
     LTag.Font = Enum.Font.Code
     LTag.TextSize = 11
     LTag.ZIndex = 302
@@ -977,8 +1071,8 @@ local function CreateUI()
     LFooter.Size = UDim2.new(1, -30, 0, 20)
     LFooter.Position = UDim2.new(0, 15, 0, 195)
     LFooter.BackgroundTransparency = 1
-    LFooter.Text = "> FOR TESTING PURPOSES ONLY"
-    LFooter.TextColor3 = Color3.fromRGB(255, 200, 0)
+    LFooter.Text = "> VERSI RESMI - OFFICIAL BUILD"
+    LFooter.TextColor3 = THEME.WarningColor
     LFooter.Font = Enum.Font.Code
     LFooter.TextSize = 9
     LFooter.ZIndex = 302
@@ -1031,8 +1125,8 @@ local function CreateUI()
     LTag2.Size = UDim2.new(1, -30, 0, 20)
     LTag2.Position = UDim2.new(0, 15, 0, 85)
     LTag2.BackgroundTransparency = 1
-    LTag2.Text = "[ TESTING BUILD - NO NIGHT LOCK ]"
-    LTag2.TextColor3 = Color3.fromRGB(255, 200, 0)
+    LTag2.Text = "[ OFFICIAL RELEASE - VERSI RESMI ]"
+    LTag2.TextColor3 = THEME.WarningColor
     LTag2.Font = Enum.Font.Code
     LTag2.TextSize = 10
     LTag2.TextXAlignment = Enum.TextXAlignment.Left
@@ -1111,7 +1205,7 @@ local function CreateUI()
     Instr.Size = UDim2.new(1, -30, 0, 80)
     Instr.Position = UDim2.new(0, 15, 0, 350)
     Instr.BackgroundTransparency = 1
-    Instr.Text = "> STEPS:\n> 1. Click GET KEY\n> 2. Generate key\n> 3. Enter key\n> 4. AUTHENTICATE\n> [ NO AUTO KICK IN TESTING BUILD ]"
+    Instr.Text = "> STEPS:\n> 1. Click GET KEY\n> 2. Generate key\n> 3. Enter key\n> 4. AUTHENTICATE\n> [ OFFICIAL RELEASE BUILD ]"
     Instr.TextColor3 = THEME.TextLight
     Instr.Font = Enum.Font.Code
     Instr.TextSize = 9
@@ -1285,8 +1379,8 @@ local function CreateUI()
     VPNLbl.Size = UDim2.new(1, -15, 0, 25)
     VPNLbl.Position = UDim2.new(0, 10, 0, 70)
     VPNLbl.BackgroundTransparency = 1
-    VPNLbl.Text = "> BUILD : TESTING (ADVANSERVER)"
-    VPNLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
+    VPNLbl.Text = "> BUILD : OFFICIAL RELEASE"
+    VPNLbl.TextColor3 = THEME.WarningColor
     VPNLbl.Font = Enum.Font.Code
     VPNLbl.TextSize = 12
     VPNLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -2060,32 +2154,32 @@ local function CreateUI()
     MakeDraggable(ToggleMenuButton)
 
     --==========================================================
-    -- LOGIN LOGIC
+    -- LOGIN LOGIC (PATCHED SYSTEM)
     --==========================================================
     LoginBtn.MouseButton1Click:Connect(function()
         local key = KeyInput.Text
         local keyData = ValidKeys[key]
         if keyData then
-            if keyData.Expiry == 0 then
+            if keyData.Expiry == 0 or os.time() < keyData.Expiry then
+                -- Key valid BUT system is patched
                 IsLoggedIn = true
-                LoginFrame.Visible = false
-                MainHub.Visible = true
-                ToggleMenuButton.Visible = true
-                MenuVisible = true
                 StatusTxt.Text = "> ACCESS GRANTED..."
-                UpdateTeleportList()
-                Notify("Success", "> WELCOME | " .. keyData.Level, 3)
-            elseif os.time() < keyData.Expiry then
-                IsLoggedIn = true
-                LoginFrame.Visible = false
-                MainHub.Visible = true
-                ToggleMenuButton.Visible = true
-                MenuVisible = true
-                StatusTxt.Text = "> ACCESS GRANTED..."
-                UpdateTeleportList()
-                local tl = keyData.Expiry - os.time()
-                local days = math.floor(tl / 86400)
-                Notify("Success", "> WELCOME | " .. days .. "d left", 3)
+                Notify("Success", "> KEY ACCEPTED", 2)
+
+                task.wait(0.8)
+
+                -- Patch notification sequence
+                Notify("ZetGames-AimLock", "> UPDATE/PATCH SUDAH SELESAI", 2.5)
+                task.wait(1.2)
+                Notify("Update", "> MOHON GUNAKAN VERSI RESMINYA", 2.5)
+                task.wait(1.2)
+                Notify("Update", "> VERSI PATCH TELAH DI HENTIKAN", 2.5)
+                task.wait(1.2)
+                Notify("Update", "> TUNGGU UPDATE SELANJUTNYA", 2.5)
+                task.wait(2)
+
+                -- Kick with patch message
+                KickWithPatchMessage()
             else
                 StatusTxt.Text = "> ERROR: KEY EXPIRED"
                 Notify("Failed", "> KEY EXPIRED", 2)
@@ -2119,7 +2213,7 @@ local function CreateUI()
     end)
 
     --==========================================================
-    -- LOADING ANIMATION (NO NIGHT LOCK)
+    -- LOADING ANIMATION
     --==========================================================
     local loadingMessages = {
         "> LOADING MODULES...",
@@ -2130,7 +2224,7 @@ local function CreateUI()
         "> LOADING SURVIVAL FEATURES...",
         "> LOADING FULL ESP...",
         "> LOADING CHAT SPAM...",
-        "> TESTING BUILD - NO NIGHT LOCK...",
+        "> OFFICIAL RELEASE BUILD...",
         "> SYSTEM READY..."
     }
 
@@ -2151,9 +2245,8 @@ local function CreateUI()
         task.wait(0.5)
         LoadingScreen.Visible = false
 
-        -- TESTING BUILD - NO NIGHT LOCK KICK
         LoginFrame.Visible = true
-        Notify("ZetGames-AimLock-Advanserver", "> TESTING BUILD LOADED", 3)
+        Notify("ZetGames-AimLock-Advanserver", "> OFFICIAL BUILD LOADED", 3)
         Notify("Login", "> ENTER ACCESS KEY", 3)
     end)
 
