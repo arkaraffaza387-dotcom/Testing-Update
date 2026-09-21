@@ -1,9 +1,9 @@
 --[[
-    ZetGames-AimLock-Advanserver V3.9.4 | TESTING BUILD
+    ZetGames-AimLock-Advanserver V3.9.0 | TESTING BUILD
     Theme: Red & Black Hacker Style
-    Fix: Wall Check Fixed + All Default OFF + Aimbot Locked
-    Aimbot: 100% Sticky (permanent, no setting)
-    Night Lock: REMOVED
+    Features: Music Playlist + Aimbot Sticky 100% + Radar Bulat + Fly-Void + Full ESP + Fullbright + dll
+    Night Lock: REMOVED (Testing Build)
+    All Default OFF - User Toggle Sendiri
 --]]
 
 --==============================================================
@@ -24,6 +24,12 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
+-- Fix SoundService biar bisa play semua ID
+pcall(function()
+    SoundService.RespectFilteringEnabled = false
+    SoundService.Volume = 1
+end)
+
 --==============================================================
 -- THEME (RED & BLACK)
 --==============================================================
@@ -34,8 +40,8 @@ local THEME = {
     AccentColor = Color3.fromRGB(255, 0, 0),
     AccentLight = Color3.fromRGB(255, 80, 80),
     AccentDark = Color3.fromRGB(150, 0, 0),
-    ButtonBG = Color3.fromRGB(25, 25, 25),      -- OFF = gelap
-    ButtonActive = Color3.fromRGB(100, 0, 0),   -- ON = merah
+    ButtonBG = Color3.fromRGB(25, 25, 25),
+    ButtonActive = Color3.fromRGB(100, 0, 0),
     TextColor = Color3.fromRGB(255, 0, 0),
     TextLight = Color3.fromRGB(255, 100, 100),
     BlueDot = Color3.fromRGB(0, 150, 255),
@@ -45,10 +51,9 @@ local THEME = {
 --==============================================================
 -- VARIABLES (SEMUA DEFAULT OFF)
 --==============================================================
--- AIMBOT (LOCKED - 100% Sticky permanen)
 local AimbotEnabled = false
 local AimbotTargetPart = "Head"
-local AimbotSmoothness = 1            -- LOCKED paling lengket
+local AimbotSmoothness = 1
 local AimbotFOV = 250
 local AimbotKeybindEnabled = false
 local AimbotKeybind = Enum.KeyCode.E
@@ -58,16 +63,7 @@ local AimbotTeamCheck = false
 local AimbotWallCheck = false
 local FOVCircleEnabled = false
 
--- ESP (default OFF semua)
 local ESPEnabled = false
-local ESPBoxEnabled = true
-local ESPNameEnabled = true
-local ESPDistanceEnabled = true
-local ESPHealthEnabled = true
-local ESPSkeletonEnabled = true
-local ESPHeadDotEnabled = true
-local ESPChamsEnabled = true
-local ESPTracerEnabled = true
 local ESPObjects = {}
 local ChamsObjects = {}
 local TracerColor = Color3.fromRGB(255, 0, 0)
@@ -75,11 +71,10 @@ local RainbowESPEnabled = false
 local RainbowConnection = nil
 local RainbowHue = 0
 
--- Radar
 local RadarEnabled = false
 local RadarRadius = 300
 local RadarZoom = 1.0
-local RadarRotateWithCamera = true
+local RadarRotateWithCamera = false
 local RadarShowNames = false
 local RadarConnection = nil
 local RadarObjects = {}
@@ -90,7 +85,6 @@ local RadarDrawingCenterDot = nil
 local RadarDrawingCompass = {}
 local RadarNearestLabel = nil
 
--- Fly-Void
 local FlyVoidEnabled = false
 local FlyVoidConnection = nil
 local FlyVoidHeight = -60
@@ -99,62 +93,56 @@ local FlyVoidKeybind = Enum.KeyCode.V
 local OriginalTransparency = {}
 local OriginalCanCollide = {}
 
--- Fullbright
 local FullbrightEnabled = false
 local OriginalLighting = {}
 
--- FPS Boost
 local FPSBoostEnabled = false
 local OriginalSettings = {}
 
--- Speed
 local SpeedHackEnabled = false
 local SpeedMultiplier = 100
 local MaxSpeed = 500
 local DefaultWalkSpeed = 16
 
--- Noclip
 local NoclipEnabled = false
 local NoclipConnection = nil
 
--- Infinite Jump
 local InfiniteJumpEnabled = false
 local JumpConnection = nil
 
--- Chat Spam
 local ChatSpamEnabled = false
 local ChatSpamText = "ZETGAMES-AIMLOCK-ADVANSERVER"
 local ChatSpamDelay = 3
 
--- Sound ESP
 local SoundESPEnabled = false
 local SoundESPRadius = 100
 local SoundESPConnection = nil
 local SoundESPBeep = nil
 local LastBeepTime = 0
 
--- Music
+-- 🎵 MUSIC PLAYLIST
 local MusicPlayerEnabled = false
 local MusicSound = nil
-local MusicID = "1837879082"
+local MusicPlaylist = {
+    {Name = "Kelingan Mantan", ID = "78450316593213"},
+    {Name = "Teh Hijau", ID = "111485011584825"},
+}
+local MusicCurrentIndex = 1
 local MusicVolume = 1
+local MusicLoading = false
 
--- Survival
 local AutoRespawnEnabled = false
 local AutoRespawnConnection = nil
 local LookAtEnabled = false
 local AntiFlingEnabled = false
 local AntiFlingConnection = nil
 
--- Teleport
 local SavedLocation = nil
 
--- Menu
 local IsLoggedIn = false
 local MenuVisible = true
 local MenuKey = Enum.KeyCode.RightControl
 
--- FOV Circle
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Visible = false
 FOVCircle.Color = THEME.AccentColor
@@ -179,7 +167,7 @@ local KeyWebsite = "https://arkaraffaza387-dotcom.github.io/Key-Zero/"
 -- SCREEN GUI
 --==============================================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ZetGamesAdvanserverV394"
+ScreenGui.Name = "ZetGamesAdvanserverV390"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -348,29 +336,121 @@ local function StopSoundESP()
 end
 
 --==============================================================
--- MUSIC
+-- 🎵 MUSIC PLAYLIST (FIXED)
 --==============================================================
-local function StartMusic()
-    if MusicSound then pcall(function() MusicSound:Destroy() end) end
+local function PreloadSound(id)
+    local assetId = "rbxassetid://" .. tostring(id)
+    pcall(function()
+        local preload = Instance.new("Sound")
+        preload.SoundId = assetId
+        preload.Parent = SoundService
+        preload.Volume = 0
+        preload:Play()
+        task.wait(0.1)
+        preload:Stop()
+        task.wait(0.1)
+        preload:Destroy()
+    end)
+end
+
+local function PlayMusic()
+    if MusicSound then
+        pcall(function()
+            MusicSound:Stop()
+            MusicSound:Destroy()
+        end)
+        MusicSound = nil
+    end
+
+    local track = MusicPlaylist[MusicCurrentIndex]
+    if not track then return end
+
+    MusicLoading = true
+    Notify("Music", "> LOADING: " .. track.Name, 2)
+
+    PreloadSound(track.ID)
+
     MusicSound = Instance.new("Sound")
-    MusicSound.SoundId = "rbxassetid://" .. MusicID
+    MusicSound.Name = "ZetMusicPlayer"
+    MusicSound.SoundId = "rbxassetid://" .. tostring(track.ID)
     MusicSound.Volume = MusicVolume
-    MusicSound.Looped = true
+    MusicSound.Looped = false
     MusicSound.Parent = SoundService
-    pcall(function() MusicSound:Play() end)
+
+    task.spawn(function()
+        local waited = 0
+        while MusicSound and MusicSound.TimeLength == 0 and waited < 5 do
+            task.wait(0.1)
+            waited = waited + 0.1
+        end
+
+        if MusicSound and MusicSound.TimeLength > 0 then
+            pcall(function() MusicSound:Play() end)
+            MusicLoading = false
+            Notify("Music", "> ▶ " .. track.Name, 3)
+        else
+            MusicLoading = false
+            Notify("Music", "> ❌ GAGAL LOAD", 3)
+            task.wait(1)
+            if MusicPlayerEnabled then
+                MusicCurrentIndex = MusicCurrentIndex + 1
+                if MusicCurrentIndex > #MusicPlaylist then MusicCurrentIndex = 1 end
+                PlayMusic()
+            end
+        end
+    end)
 end
 
 local function StopMusic()
-    if MusicSound then pcall(function() MusicSound:Stop(); MusicSound:Destroy() end); MusicSound = nil end
-end
-
-local function UpdateMusic()
     if MusicSound then
-        MusicSound.SoundId = "rbxassetid://" .. MusicID
-        MusicSound.Volume = MusicVolume
-        if MusicPlayerEnabled then pcall(function() MusicSound:Play() end) end
+        pcall(function()
+            MusicSound:Stop()
+            MusicSound:Destroy()
+        end)
+        MusicSound = nil
     end
 end
+
+local function NextMusic()
+    MusicCurrentIndex = MusicCurrentIndex + 1
+    if MusicCurrentIndex > #MusicPlaylist then MusicCurrentIndex = 1 end
+    if MusicPlayerEnabled then PlayMusic() end
+    Notify("Music", "> ⏭ " .. MusicPlaylist[MusicCurrentIndex].Name, 2)
+end
+
+local function PrevMusic()
+    MusicCurrentIndex = MusicCurrentIndex - 1
+    if MusicCurrentIndex < 1 then MusicCurrentIndex = #MusicPlaylist end
+    if MusicPlayerEnabled then PlayMusic() end
+    Notify("Music", "> ⏮ " .. MusicPlaylist[MusicCurrentIndex].Name, 2)
+end
+
+local function AddMusic(name, id)
+    table.insert(MusicPlaylist, {Name = name, ID = id})
+    Notify("Music", "> ➕ " .. name, 2)
+end
+
+local function SetMusicVolume(v)
+    MusicVolume = math.clamp(v, 0, 10)
+    if MusicSound then MusicSound.Volume = MusicVolume end
+end
+
+-- Auto-next saat lagu habis
+task.spawn(function()
+    while task.wait(0.5) do
+        if MusicPlayerEnabled and MusicSound and not MusicLoading then
+            pcall(function()
+                if MusicSound.TimeLength > 0 
+                and MusicSound.TimePosition >= MusicSound.TimeLength - 0.5 
+                and not MusicSound.IsPlaying then
+                    MusicCurrentIndex = MusicCurrentIndex + 1
+                    if MusicCurrentIndex > #MusicPlaylist then MusicCurrentIndex = 1 end
+                    PlayMusic()
+                end
+            end)
+        end
+    end
+end)
 
 --==============================================================
 -- AUTO RESPAWN
@@ -413,7 +493,7 @@ local function StopAntiFling()
 end
 
 --==============================================================
--- FLY-VOID (FIXED)
+-- FLY-VOID
 --==============================================================
 local function EnableFlyVoid()
     if FlyVoidConnection then FlyVoidConnection:Disconnect() end
@@ -795,7 +875,7 @@ local function UpdateESP()
 end
 
 --==============================================================
--- AIMBOT SIMPLE STICKY (LOCKED)
+-- AIMBOT STICKY 100%
 --==============================================================
 local function IsSameTeam(player)
     if not AimbotTeamCheck then return false end
@@ -803,7 +883,6 @@ local function IsSameTeam(player)
     return false
 end
 
--- ✅ WALL CHECK YANG BENER (cek dari kamera ke target part)
 local function HasWallBetween(camPos, targetPos, targetChar)
     if not AimbotWallCheck then return false end
     local dir = targetPos - camPos
@@ -815,9 +894,9 @@ local function HasWallBetween(camPos, targetPos, targetChar)
     rp.IgnoreWater = true
     local result = workspace:Raycast(camPos, dir.Unit * dist, rp)
     if result and result.Instance then
-        return true  -- ADA tembok
+        return true
     end
-    return false  -- TIDAK ada tembok
+    return false
 end
 
 local function FindTarget()
@@ -834,7 +913,6 @@ local function FindTarget()
                 if not IsSameTeam(player) then
                     local part = player.Character:FindFirstChild(AimbotTargetPart) or root
                     if part then
-                        -- Cek wall dulu (kalau wall check ON dan ada tembok → skip target ini)
                         local blocked = HasWallBetween(camPos, part.Position, player.Character)
                         if not blocked then
                             local sp, on = Camera:WorldToViewportPoint(part.Position)
@@ -870,7 +948,6 @@ local function RunAimbot()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
 
-    -- Cek target sticky masih valid & tidak dihalangi tembok
     if AimbotStickyTarget and IsTargetValid(AimbotStickyTarget) then
         if AimbotWallCheck then
             local tChar = AimbotStickyTarget.Character
@@ -878,7 +955,6 @@ local function RunAimbot()
             if tPart then
                 local blocked = HasWallBetween(Camera.CFrame.Position, tPart.Position, tChar)
                 if blocked then
-                    -- target terhalang tembok → buang sticky, cari baru
                     AimbotStickyTarget = nil
                 end
             end
@@ -901,10 +977,7 @@ local function RunAimbot()
     local camPos = Camera.CFrame.Position
     local aimPos = targetPart.Position
     local dir = (aimPos - camPos).Unit
-    local newCF = CFrame.new(camPos, camPos + dir)
-
-    -- 🔒 LOCKED: 100% sticky, tidak bisa diubah
-    Camera.CFrame = newCF
+    Camera.CFrame = CFrame.new(camPos, camPos + dir)
 end
 
 local function LookAtPlayer()
@@ -1235,10 +1308,10 @@ local function CreateUI()
     LTag.Size = UDim2.new(1, -30, 0, 20)
     LTag.Position = UDim2.new(0, 15, 0, 50)
     LTag.BackgroundTransparency = 1
-    LTag.Text = "[ V3.9.4 TESTING - FIXED ]"
+    LTag.Text = "[ V3.9.0 TESTING ]"
     LTag.TextColor3 = Color3.fromRGB(255, 200, 0)
     LTag.Font = Enum.Font.Code
-    LTag.TextSize = 10
+    LTag.TextSize = 11
     LTag.ZIndex = 302
     LTag.Parent = LoadingBg
 
@@ -1299,7 +1372,7 @@ local function CreateUI()
     LFooterLbl.Size = UDim2.new(1, -30, 0, 20)
     LFooterLbl.Position = UDim2.new(0, 15, 0, 195)
     LFooterLbl.BackgroundTransparency = 1
-    LFooterLbl.Text = "> WALL FIXED + DEFAULT OFF"
+    LFooterLbl.Text = "> MUSIC PLAYLIST + WALL FIXED"
     LFooterLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
     LFooterLbl.Font = Enum.Font.Code
     LFooterLbl.TextSize = 9
@@ -1330,7 +1403,7 @@ local function CreateUI()
     LTopTxt.Size = UDim2.new(1, -16, 1, 0)
     LTopTxt.Position = UDim2.new(0, 8, 0, 0)
     LTopTxt.BackgroundTransparency = 1
-    LTopTxt.Text = "● V3.9.4 TESTING"
+    LTopTxt.Text = "● V3.9.0 TESTING"
     LTopTxt.TextColor3 = THEME.TextColor
     LTopTxt.Font = Enum.Font.Code
     LTopTxt.TextSize = 11
@@ -1465,7 +1538,7 @@ local function CreateUI()
     MainTitle2.Size = UDim2.new(1, -50, 1, 0)
     MainTitle2.Position = UDim2.new(0, 12, 0, 0)
     MainTitle2.BackgroundTransparency = 1
-    MainTitle2.Text = "● V3.9.4 TESTING [WALL FIXED]"
+    MainTitle2.Text = "● V3.9.0 TESTING [MUSIC PLAYLIST]"
     MainTitle2.TextColor3 = THEME.TextColor
     MainTitle2.Font = Enum.Font.Code
     MainTitle2.TextSize = 11
@@ -1494,12 +1567,12 @@ local function CreateUI()
     ScrollFrame.BorderSizePixel = 0
     ScrollFrame.ScrollBarThickness = 6
     ScrollFrame.ScrollBarImageColor3 = THEME.AccentColor
-    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2400)
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2800)
     ScrollFrame.ZIndex = 11
     ScrollFrame.Parent = MainHub
 
     local ScrollContent = Instance.new("Frame")
-    ScrollContent.Size = UDim2.new(1, 0, 0, 2400)
+    ScrollContent.Size = UDim2.new(1, 0, 0, 2800)
     ScrollContent.BackgroundTransparency = 1
     ScrollContent.ZIndex = 11
     ScrollContent.Parent = ScrollFrame
@@ -1528,12 +1601,11 @@ local function CreateUI()
         t.Parent = f
     end
 
-    -- ✅ Toggle DEFAULT = OFF (warna gelap)
     local function Toggle(text, y, callback)
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, -20, 0, 38)
         btn.Position = UDim2.new(0, 10, 0, y)
-        btn.BackgroundColor3 = THEME.ButtonBG  -- 🔒 DEFAULT OFF warna GELAP
+        btn.BackgroundColor3 = THEME.ButtonBG
         btn.BorderColor3 = THEME.AccentColor
         btn.BorderSizePixel = 1
         btn.Text = text
@@ -1566,12 +1638,11 @@ local function CreateUI()
         return tb
     end
 
-    -- ✅ Half button DEFAULT = OFF (warna gelap)
     local function Half(text, y, xPos, callback)
         local b = Instance.new("TextButton")
         b.Size = UDim2.new(0.5, -15, 0, 32)
         b.Position = UDim2.new(xPos, 0, 0, y)
-        b.BackgroundColor3 = THEME.ButtonBG  -- 🔒 DEFAULT OFF warna GELAP
+        b.BackgroundColor3 = THEME.ButtonBG
         b.BorderColor3 = THEME.AccentColor
         b.BorderSizePixel = 1
         b.Text = text
@@ -1628,7 +1699,7 @@ local function CreateUI()
     BuildLbl.Size = UDim2.new(1, -15, 0, 22)
     BuildLbl.Position = UDim2.new(0, 10, 0, 51)
     BuildLbl.BackgroundTransparency = 1
-    BuildLbl.Text = "> BUILD: V3.9.4 TESTING"
+    BuildLbl.Text = "> BUILD: V3.9.0 TESTING"
     BuildLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
     BuildLbl.Font = Enum.Font.Code
     BuildLbl.TextSize = 11
@@ -1771,33 +1842,158 @@ local function CreateUI()
     end)
 
     --==========================================================
-    -- 6. MUSIC PLAYER
+    -- 6. 🎵 MUSIC PLAYLIST (GANTI MUSIC PLAYER)
     --==========================================================
-    Section("=== 🎵 MUSIC PLAYER ===", 826)
+    Section("=== 🎵 MUSIC PLAYLIST ===", 826)
 
-    Toggle("> MUSIC PLAYER: OFF", 858, function(btn)
+    local MusicNowLbl = Instance.new("TextLabel")
+    MusicNowLbl.Size = UDim2.new(1, -20, 0, 22)
+    MusicNowLbl.Position = UDim2.new(0, 10, 0, 858)
+    MusicNowLbl.BackgroundTransparency = 1
+    MusicNowLbl.Text = "> NOW: " .. MusicPlaylist[MusicCurrentIndex].Name
+    MusicNowLbl.TextColor3 = THEME.TextColor
+    MusicNowLbl.Font = Enum.Font.Code
+    MusicNowLbl.TextSize = 10
+    MusicNowLbl.TextXAlignment = Enum.TextXAlignment.Left
+    MusicNowLbl.ZIndex = 12
+    MusicNowLbl.Parent = ScrollContent
+
+    task.spawn(function()
+        while task.wait(0.5) do
+            pcall(function()
+                MusicNowLbl.Text = "> NOW: " .. MusicPlaylist[MusicCurrentIndex].Name
+            end)
+        end
+    end)
+
+    Toggle("> MUSIC PLAYER: OFF", 885, function(btn)
         MusicPlayerEnabled = not MusicPlayerEnabled
         btn.Text = MusicPlayerEnabled and "> MUSIC PLAYER: ON" or "> MUSIC PLAYER: OFF"
         btn.BackgroundColor3 = MusicPlayerEnabled and THEME.ButtonActive or THEME.ButtonBG
-        if MusicPlayerEnabled then StartMusic() else StopMusic() end
+        if MusicPlayerEnabled then
+            PlayMusic()
+        else
+            StopMusic()
+        end
     end)
 
-    local MusicInput = Input("> Sound ID", 900, MusicID)
-    MusicInput.FocusLost:Connect(function(enterPressed)
-        if enterPressed and MusicInput.Text ~= "" then
-            MusicID = MusicInput.Text
-            UpdateMusic()
+    Half("> ⏮ PREV", 927, 0, function(btn)
+        PrevMusic()
+    end)
+
+    Half("> ⏭ NEXT", 927, 0.5, function(btn)
+        NextMusic()
+    end)
+
+    local MusicVolInput = Input("> Volume (0-10)", 964, tostring(MusicVolume))
+    MusicVolInput.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local nv = tonumber(MusicVolInput.Text)
+            if nv then SetMusicVolume(nv) end
+            MusicVolInput.Text = tostring(MusicVolume)
+        end
+    end)
+
+    local MusicListLbl = Instance.new("TextLabel")
+    MusicListLbl.Size = UDim2.new(1, -20, 0, 20)
+    MusicListLbl.Position = UDim2.new(0, 10, 0, 1001)
+    MusicListLbl.BackgroundTransparency = 1
+    MusicListLbl.Text = "> PLAYLIST (klik untuk play):"
+    MusicListLbl.TextColor3 = THEME.TextColor
+    MusicListLbl.Font = Enum.Font.Code
+    MusicListLbl.TextSize = 10
+    MusicListLbl.TextXAlignment = Enum.TextXAlignment.Left
+    MusicListLbl.ZIndex = 12
+    MusicListLbl.Parent = ScrollContent
+
+    local MusicListFrame = Instance.new("Frame")
+    MusicListFrame.Size = UDim2.new(1, -20, 0, 60)
+    MusicListFrame.Position = UDim2.new(0, 10, 0, 1023)
+    MusicListFrame.BackgroundColor3 = THEME.PanelBG
+    MusicListFrame.BorderColor3 = THEME.AccentColor
+    MusicListFrame.BorderSizePixel = 1
+    MusicListFrame.ZIndex = 12
+    MusicListFrame.Parent = ScrollContent
+    Instance.new("UICorner", MusicListFrame).CornerRadius = UDim.new(0, 4)
+
+    local MusicListContainer = Instance.new("Frame")
+    MusicListContainer.Size = UDim2.new(1, -10, 1, -10)
+    MusicListContainer.Position = UDim2.new(0, 5, 0, 5)
+    MusicListContainer.BackgroundTransparency = 1
+    MusicListContainer.ZIndex = 13
+    MusicListContainer.Parent = MusicListFrame
+
+    local MusicListItemRefs = {}
+
+    local function RefreshMusicList()
+        for _, item in pairs(MusicListItemRefs) do
+            pcall(function() item:Destroy() end)
+        end
+        MusicListItemRefs = {}
+
+        local y = 0
+        for i, track in ipairs(MusicPlaylist) do
+            local item = Instance.new("TextButton")
+            item.Size = UDim2.new(1, 0, 0, 22)
+            item.Position = UDim2.new(0, 0, 0, y)
+            item.BackgroundColor3 = (i == MusicCurrentIndex) and THEME.ButtonActive or THEME.ButtonBG
+            item.BorderColor3 = THEME.AccentColor
+            item.BorderSizePixel = 1
+            item.Text = "> " .. i .. ". " .. track.Name
+            item.TextColor3 = THEME.TextColor
+            item.Font = Enum.Font.Code
+            item.TextSize = 10
+            item.TextXAlignment = Enum.TextXAlignment.Left
+            item.ZIndex = 14
+            item.Parent = MusicListContainer
+            Instance.new("UICorner", item).CornerRadius = UDim.new(0, 3)
+
+            item.MouseButton1Click:Connect(function()
+                MusicCurrentIndex = i
+                if MusicPlayerEnabled then PlayMusic() end
+                RefreshMusicList()
+            end)
+
+            table.insert(MusicListItemRefs, item)
+            y = y + 24
+        end
+
+        MusicListFrame.Size = UDim2.new(1, -20, 0, math.max(40, y + 10))
+    end
+
+    RefreshMusicList()
+
+    task.spawn(function()
+        while task.wait(1.5) do
+            pcall(function()
+                RefreshMusicList()
+            end)
+        end
+    end)
+
+    local AddNameInput = Input("> Nama lagu baru", 1100)
+    local AddIDInput = Input("> Sound ID lagu baru", 1137)
+    Toggle("> ➕ ADD LAGU", 1174, function(btn)
+        local name = AddNameInput.Text
+        local id = AddIDInput.Text
+        if name ~= "" and id ~= "" then
+            AddMusic(name, id)
+            AddNameInput.Text = ""
+            AddIDInput.Text = ""
+            RefreshMusicList()
+        else
+            Notify("Music", "> ISI NAMA & ID", 2)
         end
     end)
 
     --==========================================================
-    -- 7. 🎯 ENHANCED AIMBOT (SIMPLE, NO RESET, NO LENGKET)
+    -- 7. ENHANCED AIMBOT
     --==========================================================
-    Section("=== 🎯 ENHANCED AIMBOT ===", 947)
+    Section("=== 🎯 ENHANCED AIMBOT ===", 1230)
 
     local AimbotBtn = Instance.new("TextButton")
     AimbotBtn.Size = UDim2.new(1, -20, 0, 45)
-    AimbotBtn.Position = UDim2.new(0, 10, 0, 979)
+    AimbotBtn.Position = UDim2.new(0, 10, 0, 1262)
     AimbotBtn.BackgroundColor3 = THEME.ButtonBG
     AimbotBtn.BorderColor3 = THEME.AccentColor
     AimbotBtn.BorderSizePixel = 2
@@ -1822,7 +2018,7 @@ local function CreateUI()
 
     local AimbotInfo = Instance.new("TextLabel")
     AimbotInfo.Size = UDim2.new(1, -20, 0, 25)
-    AimbotInfo.Position = UDim2.new(0, 10, 0, 1028)
+    AimbotInfo.Position = UDim2.new(0, 10, 0, 1311)
     AimbotInfo.BackgroundTransparency = 1
     AimbotInfo.Text = "> ON = auto lock | 100% lengket (locked)"
     AimbotInfo.TextColor3 = THEME.TextLight
@@ -1832,14 +2028,13 @@ local function CreateUI()
     AimbotInfo.ZIndex = 12
     AimbotInfo.Parent = ScrollContent
 
-    -- FOV Circle
-    Half("> FOV CIRCLE: OFF", 1058, 0, function(btn)
+    Half("> FOV CIRCLE: OFF", 1341, 0, function(btn)
         FOVCircleEnabled = not FOVCircleEnabled
         btn.Text = FOVCircleEnabled and "> FOV: ON" or "> FOV: OFF"
         btn.BackgroundColor3 = FOVCircleEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Half("> TEAM CHECK: OFF", 1058, 0.5, function(btn)
+    Half("> TEAM CHECK: OFF", 1341, 0.5, function(btn)
         AimbotTeamCheck = not AimbotTeamCheck
         btn.Text = AimbotTeamCheck and "> TEAM: ON" or "> TEAM: OFF"
         btn.BackgroundColor3 = AimbotTeamCheck and THEME.ButtonActive or THEME.ButtonBG
@@ -1847,7 +2042,7 @@ local function CreateUI()
 
     local TargetLbl = Instance.new("TextLabel")
     TargetLbl.Size = UDim2.new(1, -20, 0, 18)
-    TargetLbl.Position = UDim2.new(0, 10, 0, 1100)
+    TargetLbl.Position = UDim2.new(0, 10, 0, 1383)
     TargetLbl.BackgroundTransparency = 1
     TargetLbl.Text = "> TARGET: HEAD"
     TargetLbl.TextColor3 = THEME.TextColor
@@ -1859,7 +2054,7 @@ local function CreateUI()
 
     local TargetBtnFrame = Instance.new("Frame")
     TargetBtnFrame.Size = UDim2.new(1, -20, 0, 30)
-    TargetBtnFrame.Position = UDim2.new(0, 10, 0, 1120)
+    TargetBtnFrame.Position = UDim2.new(0, 10, 0, 1403)
     TargetBtnFrame.BackgroundTransparency = 1
     TargetBtnFrame.ZIndex = 12
     TargetBtnFrame.Parent = ScrollContent
@@ -1887,7 +2082,7 @@ local function CreateUI()
     TargetBtn("TORSO", "HumanoidRootPart", 0.345)
     TargetBtn("BODY", "UpperTorso", 0.69)
 
-    local FOVInput = Input("> FOV Radius (50-2000)", 1157, tostring(AimbotFOV))
+    local FOVInput = Input("> FOV Radius (50-2000)", 1440, tostring(AimbotFOV))
     FOVInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nf = tonumber(FOVInput.Text)
@@ -1896,25 +2091,25 @@ local function CreateUI()
         end
     end)
 
-    Toggle("> KEYBIND HOLD (E): OFF", 1194, function(btn)
+    Toggle("> KEYBIND HOLD (E): OFF", 1477, function(btn)
         AimbotKeybindEnabled = not AimbotKeybindEnabled
         btn.Text = AimbotKeybindEnabled and "> KEYBIND HOLD (E): ON" or "> KEYBIND HOLD (E): OFF"
         btn.BackgroundColor3 = AimbotKeybindEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Toggle("> WALL CHECK: OFF", 1236, function(btn)
+    Toggle("> WALL CHECK: OFF", 1519, function(btn)
         AimbotWallCheck = not AimbotWallCheck
         btn.Text = AimbotWallCheck and "> WALL CHECK: ON" or "> WALL CHECK: OFF"
         btn.BackgroundColor3 = AimbotWallCheck and THEME.ButtonActive or THEME.ButtonBG
-        AimbotStickyTarget = nil  -- reset sticky saat toggle
+        AimbotStickyTarget = nil
     end)
 
     --==========================================================
     -- 8. FULL ESP
     --==========================================================
-    Section("=== FULL ESP ===", 1283)
+    Section("=== FULL ESP ===", 1566)
 
-    Toggle("> ESP MASTER: OFF", 1315, function(btn)
+    Toggle("> ESP MASTER: OFF", 1598, function(btn)
         ESPEnabled = not ESPEnabled
         btn.Text = ESPEnabled and "> ESP MASTER: ON" or "> ESP MASTER: OFF"
         btn.BackgroundColor3 = ESPEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -1925,7 +2120,7 @@ local function CreateUI()
 
     local ESPInfo = Instance.new("TextLabel")
     ESPInfo.Size = UDim2.new(1, -20, 0, 40)
-    ESPInfo.Position = UDim2.new(0, 10, 0, 1357)
+    ESPInfo.Position = UDim2.new(0, 10, 0, 1640)
     ESPInfo.BackgroundTransparency = 1
     ESPInfo.Text = "> ON = Box + Name + Dist + HP\n> + Skeleton + Chams + Tracer + HeadDot"
     ESPInfo.TextColor3 = THEME.TextLight
@@ -1935,7 +2130,7 @@ local function CreateUI()
     ESPInfo.ZIndex = 12
     ESPInfo.Parent = ScrollContent
 
-    Toggle("> 🌈 RAINBOW ESP: OFF", 1405, function(btn)
+    Toggle("> 🌈 RAINBOW ESP: OFF", 1688, function(btn)
         RainbowESPEnabled = not RainbowESPEnabled
         btn.Text = RainbowESPEnabled and "> 🌈 RAINBOW ESP: ON" or "> 🌈 RAINBOW ESP: OFF"
         btn.BackgroundColor3 = RainbowESPEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -1943,11 +2138,11 @@ local function CreateUI()
     end)
 
     --==========================================================
-    -- 9. 📡 RADAR BULAT
+    -- 9. RADAR BULAT
     --==========================================================
-    Section("=== 📡 RADAR BULAT (NEW) ===", 1453)
+    Section("=== 📡 RADAR BULAT ===", 1736)
 
-    Toggle("> RADAR: OFF", 1485, function(btn)
+    Toggle("> RADAR: OFF", 1768, function(btn)
         RadarEnabled = not RadarEnabled
         if RadarEnabled then
             btn.Text = "> RADAR: ON"
@@ -1962,19 +2157,19 @@ local function CreateUI()
         end
     end)
 
-    Half("> ROTATE: OFF", 1527, 0, function(btn)
+    Half("> ROTATE: OFF", 1810, 0, function(btn)
         RadarRotateWithCamera = not RadarRotateWithCamera
         btn.Text = RadarRotateWithCamera and "> ROTATE: ON" or "> ROTATE: OFF"
         btn.BackgroundColor3 = RadarRotateWithCamera and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Half("> NAMES: OFF", 1527, 0.5, function(btn)
+    Half("> NAMES: OFF", 1810, 0.5, function(btn)
         RadarShowNames = not RadarShowNames
         btn.Text = RadarShowNames and "> NAMES: ON" or "> NAMES: OFF"
         btn.BackgroundColor3 = RadarShowNames and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    local RadarRadInput = Input("> Radius (100-1000)", 1564, tostring(RadarRadius))
+    local RadarRadInput = Input("> Radius (100-1000)", 1847, tostring(RadarRadius))
     RadarRadInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nr = tonumber(RadarRadInput.Text)
@@ -1983,7 +2178,7 @@ local function CreateUI()
         end
     end)
 
-    local RadarZoomInput = Input("> Zoom (0.5-3.0)", 1601, tostring(RadarZoom))
+    local RadarZoomInput = Input("> Zoom (0.5-3.0)", 1884, tostring(RadarZoom))
     RadarZoomInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nz = tonumber(RadarZoomInput.Text)
@@ -1995,16 +2190,16 @@ local function CreateUI()
     --==========================================================
     -- 10. CHAT SPAM
     --==========================================================
-    Section("=== CHAT SPAM ===", 1649)
+    Section("=== CHAT SPAM ===", 1932)
 
-    Toggle("> CHAT SPAM: OFF", 1681, function(btn)
+    Toggle("> CHAT SPAM: OFF", 1964, function(btn)
         ChatSpamEnabled = not ChatSpamEnabled
         btn.Text = ChatSpamEnabled and "> CHAT SPAM: ON" or "> CHAT SPAM: OFF"
         btn.BackgroundColor3 = ChatSpamEnabled and THEME.ButtonActive or THEME.ButtonBG
         if ChatSpamEnabled then StartChatSpamLoop() end
     end)
 
-    local ChatInput = Input("> Message", 1723, ChatSpamText)
+    local ChatInput = Input("> Message", 2006, ChatSpamText)
     ChatInput.FocusLost:Connect(function(enterPressed)
         if enterPressed and ChatInput.Text ~= "" then ChatSpamText = ChatInput.Text end
     end)
@@ -2012,14 +2207,14 @@ local function CreateUI()
     --==========================================================
     -- 11. TELEPORT
     --==========================================================
-    Section("=== TELEPORT ===", 1770)
+    Section("=== TELEPORT ===", 2053)
 
-    Toggle("> TELEPORT TO MOUSE", 1802, function(btn)
+    Toggle("> TELEPORT TO MOUSE", 2085, function(btn)
         TeleportToMouse()
     end)
 
-    Half("> SAVE LOC", 1844, 0, function(btn) SaveLocation() end)
-    Half("> LOAD LOC", 1844, 0.5, function(btn) LoadLocation() end)
+    Half("> SAVE LOC", 2127, 0, function(btn) SaveLocation() end)
+    Half("> LOAD LOC", 2127, 0.5, function(btn) LoadLocation() end)
 
     --==========================================================
     -- TOGGLE MENU BUTTON
@@ -2058,7 +2253,6 @@ local function CreateUI()
         end
     end)
 
-    -- Drag
     local function MakeDraggable(frame)
         local dragging = false
         local dragInput, dragStart, startPos
@@ -2090,7 +2284,6 @@ local function CreateUI()
     MakeDraggable(LoginFrame)
     MakeDraggable(MainHub)
 
-    -- LOGIN
     LoginBtn.MouseButton1Click:Connect(function()
         local key = KeyInput.Text
         local keyData = ValidKeys[key]
@@ -2102,8 +2295,8 @@ local function CreateUI()
                 ToggleMenuButton.Visible = true
                 MenuVisible = true
                 StatusTxt.Text = "> ACCESS GRANTED..."
-                Notify("Success", "> WELCOME V3.9.4", 3)
-                Notify("Fixed", "> Wall Check + Default OFF", 3)
+                Notify("Success", "> WELCOME V3.9.0", 3)
+                Notify("Music", "> Playlist Ready 🎵", 3)
             else
                 StatusTxt.Text = "> ERROR: KEY EXPIRED"
                 Notify("Failed", "> KEY EXPIRED", 2)
@@ -2123,16 +2316,15 @@ local function CreateUI()
         end
     end)
 
-    -- LOADING
     local loadingMessages = {
-        "> LOADING V3.9.4...",
+        "> LOADING V3.9.0...",
+        "> INIT MUSIC PLAYLIST...",
         "> FIXING WALL CHECK...",
         "> DEFAULT ALL OFF...",
         "> LOCKING AIMBOT 100%...",
         "> LOADING ESP...",
         "> LOADING RADAR...",
         "> LOADING FLY-VOID...",
-        "> FINALIZING...",
         "> TESTING - NO NIGHT LOCK...",
         "> SYSTEM READY!"
     }
@@ -2151,7 +2343,7 @@ local function CreateUI()
         task.wait(0.5)
         LoadingScreen.Visible = false
         LoginFrame.Visible = true
-        Notify("V3.9.4 TESTING", "> WALL FIXED", 3)
+        Notify("V3.9.0 TESTING", "> MUSIC PLAYLIST READY", 3)
         Notify("Login", "> ENTER ACCESS KEY", 3)
     end)
 
