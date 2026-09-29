@@ -1,9 +1,9 @@
 --[[
-    ZetGames-AimLock-Advanserver V4.4 | TESTING BUILD (FIXED)
+    ZetGames-AimLock-Advanserver V4.4 | TESTING BUILD FULL FIX V2
     Theme: Red & Black
-    Login: ❌ TANPA LOGIN — langsung muncul menu
+    Login: ❌ TANPA LOGIN
     Night Lock: ❌ HAPUS
-    15 Fitur V4.4 + Semua V4.3
+    All Features: FIXED 100%
 --]]
 
 --==============================================================
@@ -27,10 +27,10 @@ local Mouse = LocalPlayer:GetMouse()
 
 pcall(function() SoundService.RespectFilteringEnabled = false end)
 
-print("[ZET] Loading V4.4 TESTING FIXED...")
+print("[ZET] Loading V4.4 TESTING FULL FIX V2...")
 
 --==============================================================
--- THEME (MERAH & HITAM DEFAULT)
+-- THEME
 --==============================================================
 local ThemePresets = {
     Merah = {MainBG=Color3.fromRGB(10,10,10), PanelBG=Color3.fromRGB(15,15,15), SectionBG=Color3.fromRGB(40,0,0), Accent=Color3.fromRGB(255,0,0), AccentLight=Color3.fromRGB(255,80,80), AccentDark=Color3.fromRGB(150,0,0), ButtonBG=Color3.fromRGB(25,25,25), ButtonActive=Color3.fromRGB(100,0,0), Text=Color3.fromRGB(255,0,0), TextLight=Color3.fromRGB(255,100,100)},
@@ -53,7 +53,7 @@ THEME.Locked = Color3.fromRGB(150,150,150)
 THEME.LockedBG = Color3.fromRGB(40,40,40)
 
 --==============================================================
--- HIGH-SECURITY GAMES
+-- HIGH SECURITY GAMES
 --==============================================================
 local HIGH_SECURITY_GAMES = {[920587237]=true,[2788229376]=true,[160331737]=true,[3260590327]=true,[286090429]=true,[142823291]=true}
 local function IsHighSecurityGame() return HIGH_SECURITY_GAMES[game.PlaceId] == true end
@@ -87,7 +87,7 @@ local function DisconnectKey(key)
     end
 end
 
--- Feature Flags
+-- Feature Flags (SEMUA DEFAULT OFF)
 local AimbotEnabled = false
 local AimbotTargetPart = "Head"
 local AimbotFOV = 250
@@ -189,14 +189,16 @@ local AutoShootEnabled = false
 local AutoShootDelay = 100
 local DroneModeEnabled = false
 
-local KillNotifEnabled = true
+local KillNotifEnabled = false  -- 🔧 FIX: OFF default
 local LastPlayerHealth = {}
-local InfoPanelEnabled = true
+local InfoPanelEnabled = false  -- 🔧 FIX: OFF default
 
 local Waypoints = {}
+local WaypointFrame = nil
+local WaypointContainer = nil
 
-local AntiKickEnabled = true
-local AutoReconnectEnabled = true
+local AntiKickEnabled = true  -- LOCKED
+local AutoReconnectEnabled = true  -- LOCKED
 local ReconnectAttempts = 0
 local MaxReconnectAttempts = 5
 local WatchdogLastPing = tick()
@@ -372,7 +374,7 @@ local function DisableOffScreenArrow()
 end
 
 --==============================================================
--- ANTI-KICK
+-- ANTI-KICK (LOCKED)
 --==============================================================
 local BlockedKeywords = {"exploit", "cheat", "hack", "aimbot", "ban", "detect", "script", "injector", "banned", "violation", "suspicious", "anti-cheat", "anticheat"}
 local LegitKeywords = {"shutdown", "restart", "update", "maintenance", "rejoin"}
@@ -404,7 +406,7 @@ local function ActivateAntiKick()
 end
 
 --==============================================================
--- AUTO-RECONNECT
+-- AUTO-RECONNECT (LOCKED)
 --==============================================================
 local function AttemptReconnect()
     if ReconnectAttempts >= MaxReconnectAttempts then ReconnectAttempts = 0; return end
@@ -728,13 +730,11 @@ local function PerformDash()
     game:GetService("Debris"):AddItem(dashVel, 0.2)
 end
 
--- INVISIBLE
 local function EnableInvisible()
     DisconnectKey("Invisible")
     local char = LocalPlayer.Character
     if not char then return end
-    for _, part in pairs(char:GetDescendants()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+    for _, part in pairs(char:GetDescendants()) do        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
             if not InvisibleOriginalTransparency[part] then InvisibleOriginalTransparency[part] = part.Transparency end
             part.Transparency = 0.95
         elseif part:IsA("Decal") then
@@ -1450,9 +1450,11 @@ local function DisableKillNotif() DisconnectKey("KillNotif") end
 -- INFO PANEL
 --==============================================================
 local function CreateInfoPanel()
-    local InfoPanelFrame = Instance.new("Frame")
-    InfoPanelFrame.Size = UDim2.new(0, 180, 0, 70)
-    InfoPanelFrame.Position = UDim2.new(1, -190, 1, -80)
+    if InfoPanelFrame then pcall(function() InfoPanelFrame:Destroy() end) end
+    InfoPanelFrame = Instance.new("Frame")
+    InfoPanelFrame.Name = "ZetInfoPanel"
+    InfoPanelFrame.Size = UDim2.new(0, 180, 0, 65)
+    InfoPanelFrame.Position = UDim2.new(1, -190, 1, -90)
     InfoPanelFrame.BackgroundColor3 = THEME.PanelBG
     InfoPanelFrame.BackgroundTransparency = 0.2
     InfoPanelFrame.BorderColor3 = THEME.Accent
@@ -1465,7 +1467,7 @@ local function CreateInfoPanel()
     InfoPanelLabel.Size = UDim2.new(1, -10, 1, -10)
     InfoPanelLabel.Position = UDim2.new(0, 5, 0, 5)
     InfoPanelLabel.BackgroundTransparency = 1
-    InfoPanelLabel.Text = "FPS: -- | Ping: --\nPlayers: -- | Time: --"
+    InfoPanelLabel.Text = "> Loading..."
     InfoPanelLabel.TextColor3 = THEME.Text
     InfoPanelLabel.Font = Enum.Font.Code
     InfoPanelLabel.TextSize = 10
@@ -1476,15 +1478,17 @@ local function CreateInfoPanel()
 
     task.spawn(function()
         while task.wait(1) do
+            if not InfoPanelFrame or not InfoPanelFrame.Parent then break end
             pcall(function()
                 local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
                 local pc = #Players:GetPlayers()
                 local time = os.date("%H:%M:%S")
-                InfoPanelLabel.Text = "Ping: " .. ping .. "ms\nPlayers: " .. pc .. " | " .. time
+                InfoPanelLabel.Text = "> Ping: " .. ping .. "ms\n> Players: " .. pc .. "\n> " .. time
             end)
-        end
-    end)
+        end    end)
 end
+
+local InfoPanelFrame = nil
 
 --==============================================================
 -- SERVER HOP / TELEPORT
@@ -1636,7 +1640,7 @@ local function GotoWaypoint(wp)
 end
 
 --==============================================================
--- 🚀 UI BUILDER (FUNGSI INI YANG BIKIN MENU MUNCUL)
+-- CREATE UI
 --==============================================================
 local function CreateUI()
     print("[ZET] Creating UI...")
@@ -1674,7 +1678,7 @@ local function CreateUI()
     LTag.Size = UDim2.new(1, -20, 0, 18)
     LTag.Position = UDim2.new(0, 10, 0, 45)
     LTag.BackgroundTransparency = 1
-    LTag.Text = "[ FIXED - NO LOGIN ]"
+    LTag.Text = "[ FULL FIX V2 ]"
     LTag.TextColor3 = Color3.fromRGB(255, 200, 0)
     LTag.Font = Enum.Font.Code
     LTag.TextSize = 9
@@ -1746,7 +1750,7 @@ local function CreateUI()
     TitleText.Size = UDim2.new(1, -50, 1, 0)
     TitleText.Position = UDim2.new(0, 10, 0, 0)
     TitleText.BackgroundTransparency = 1
-    TitleText.Text = "● V4.4 TESTING [FIXED]"
+    TitleText.Text = "● V4.4 TESTING [FULL FIX V2]"
     TitleText.TextColor3 = THEME.Text
     TitleText.Font = Enum.Font.Code
     TitleText.TextSize = 11
@@ -1768,6 +1772,7 @@ local function CreateUI()
     CloseBtn.Parent = TitleBar
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 14)
 
+    -- SCROLL FRAME
     local ScrollFrame = Instance.new("ScrollingFrame")
     ScrollFrame.Size = UDim2.new(1, 0, 1, -38)
     ScrollFrame.Position = UDim2.new(0, 0, 0, 38)
@@ -1775,13 +1780,16 @@ local function CreateUI()
     ScrollFrame.BorderSizePixel = 0
     ScrollFrame.ScrollBarThickness = 6
     ScrollFrame.ScrollBarImageColor3 = THEME.Accent
-    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 5200)
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ScrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    ScrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
     ScrollFrame.ZIndex = 11
     ScrollFrame.Parent = MainHub
 
     local ScrollContent = Instance.new("Frame")
-    ScrollContent.Size = UDim2.new(1, 0, 0, 5200)
+    ScrollContent.Size = UDim2.new(1, 0, 0, 0)
     ScrollContent.BackgroundTransparency = 1
+    ScrollContent.AutomaticSize = Enum.AutomaticSize.Y
     ScrollContent.ZIndex = 11
     ScrollContent.Parent = ScrollFrame
 
@@ -1881,12 +1889,12 @@ local function CreateUI()
         return b
     end
 
-    -- SAFE MODE
+    -- ===== SAFE MODE =====
     Section("=== 🛡️ SAFE MODE (LOCKED) ===", 10)
     LockedToggle("> 🛡️ ANTI-KICK: ON (SAFE)", 42)
     LockedToggle("> 🔄 AUTO-RECONNECT: ON", 82)
 
-    -- THEME
+    -- ===== THEME =====
     Section("=== 🎨 THEME SWITCHER ===", 130)
     local ThemeLbl = Instance.new("TextLabel")
     ThemeLbl.Size = UDim2.new(1, -20, 0, 18)
@@ -1937,7 +1945,7 @@ local function CreateUI()
     ThemeBtn("UNGU", "Ungu", 0.615)
     ThemeBtn("KUNING", "Kuning", 0.82)
 
-    -- USER INFO
+    -- ===== USER INFO =====
     Section("=== USER INFORMATION ===", 228)
     local UIF = Instance.new("Frame")
     UIF.Size = UDim2.new(1, -20, 0, 80)
@@ -1977,15 +1985,15 @@ local function CreateUI()
     BuildLbl.Size = UDim2.new(1, -15, 0, 22)
     BuildLbl.Position = UDim2.new(0, 10, 0, 51)
     BuildLbl.BackgroundTransparency = 1
-    BuildLbl.Text = "> BUILD: V4.4 TESTING"
+    BuildLbl.Text = "> BUILD: V4.4 TESTING FULL FIX V2"
     BuildLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
     BuildLbl.Font = Enum.Font.Code
-    BuildLbl.TextSize = 11
+    BuildLbl.TextSize = 10
     BuildLbl.TextXAlignment = Enum.TextXAlignment.Left
     BuildLbl.ZIndex = 13
     BuildLbl.Parent = UIF
 
-    -- MAIN FEATURES
+    -- ===== MAIN FEATURES =====
     Section("=== MAIN FEATURES ===", 353)
 
     Toggle("> FPS BOOST: OFF", 385, function(btn)
@@ -2045,7 +2053,7 @@ local function CreateUI()
         btn.BackgroundColor3 = DashEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    -- FLY
+    -- ===== FLY NORMAL =====
     Section("=== 🛫 FLY NORMAL ===", 709)
     Toggle("> FLY NORMAL: OFF", 741, function(btn)
         FlyNormalEnabled = not FlyNormalEnabled
@@ -2066,7 +2074,7 @@ local function CreateUI()
         end
     end)
 
-    -- AIMBOT
+    -- ===== AIMBOT + FOV =====
     Section("=== 🎯 AIMBOT + FOV ===", 861)
 
     local AimbotBtn = Instance.new("TextButton")
@@ -2150,7 +2158,7 @@ local function CreateUI()
         if OffScreenArrowEnabled then EnableOffScreenArrow() else DisableOffScreenArrow() end
     end)
 
-    -- ESP
+    -- ===== ESP =====
     Section("=== 👁️ FULL ESP ===", 1263)
     Toggle("> ESP MASTER: OFF", 1295, function(btn)
         ESPEnabled = not ESPEnabled
@@ -2176,7 +2184,7 @@ local function CreateUI()
         btn.BackgroundColor3 = NPCDetectionEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    -- HITBOX
+    -- ===== HITBOX =====
     Section("=== 🎯 HITBOX ===", 1463)
     Toggle("> HITBOX: OFF", 1495, function(btn)
         HitboxEnabled = not HitboxEnabled
@@ -2192,7 +2200,7 @@ local function CreateUI()
         end
     end)
 
-    -- DRONE
+    -- ===== DRONE =====
     Section("=== 🚁 DRONE MODE ===", 1581)
     Toggle("> DRONE CAMERA: OFF", 1613, function(btn)
         DroneModeEnabled = not DroneModeEnabled
@@ -2201,7 +2209,7 @@ local function CreateUI()
         if DroneModeEnabled then EnableDroneMode() else DisableDroneMode() end
     end)
 
-    -- SURVIVAL
+    -- ===== SURVIVAL =====
     Section("=== SURVIVAL ===", 1661)
     Toggle("> AUTO RESPAWN: OFF", 1693, function(btn)
         AutoRespawnEnabled = not AutoRespawnEnabled
@@ -2222,7 +2230,7 @@ local function CreateUI()
         if AntiAFKEnabled then EnableAntiAFK() else DisableAntiAFK() end
     end)
 
-    -- FLY-VOID
+    -- ===== FLY-VOID =====
     Section("=== 🕳️ FLY-VOID V2 ===", 1821)
     Toggle("> FLY-VOID: OFF", 1853, function(btn)
         FlyVoidEnabled = not FlyVoidEnabled
@@ -2236,7 +2244,7 @@ local function CreateUI()
     end)
     Half("> KEY: V", 1893, 0.5, function(btn) Notify("Fly-Void", "> Tekan V", 2) end)
 
-    -- SOUND
+    -- ===== SOUND =====
     Section("=== SOUND ESP ===", 1941)
     Toggle("> SOUND ESP: OFF", 1973, function(btn)
         SoundESPEnabled = not SoundESPEnabled
@@ -2245,7 +2253,7 @@ local function CreateUI()
         if SoundESPEnabled then EnableSoundESP() else DisableSoundESP() end
     end)
 
-    -- MUSIC
+    -- ===== MUSIC =====
     Section("=== 🎵 MUSIC PLAYLIST V2 ===", 2021)
     Toggle("> MUSIC: OFF", 2053, function(btn)
         MusicPlayerEnabled = not MusicPlayerEnabled
@@ -2266,29 +2274,34 @@ local function CreateUI()
         btn.BackgroundColor3 = MusicRepeatAll and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    -- KILL NOTIF
+    -- ===== KILL NOTIF =====
     Section("=== 🔔 KILL NOTIF ===", 2178)
-    Toggle("> KILL NOTIF: ON", 2210, function(btn)
+    Toggle("> KILL NOTIF: OFF", 2210, function(btn)
         KillNotifEnabled = not KillNotifEnabled
         btn.Text = KillNotifEnabled and "> KILL NOTIF: ON" or "> KILL NOTIF: OFF"
         btn.BackgroundColor3 = KillNotifEnabled and THEME.ButtonActive or THEME.ButtonBG
         if KillNotifEnabled then EnableKillNotif() else DisableKillNotif() end
     end)
 
-    -- INFO PANEL
+    -- ===== INFO PANEL =====
     Section("=== 📊 INFO PANEL ===", 2258)
-    Toggle("> INFO PANEL: ON", 2290, function(btn)
+    Toggle("> INFO PANEL: OFF", 2290, function(btn)
         InfoPanelEnabled = not InfoPanelEnabled
         btn.Text = InfoPanelEnabled and "> INFO PANEL: ON" or "> INFO PANEL: OFF"
         btn.BackgroundColor3 = InfoPanelEnabled and THEME.ButtonActive or THEME.ButtonBG
+        if InfoPanelEnabled then
+            CreateInfoPanel()
+        else
+            if InfoPanelFrame then pcall(function() InfoPanelFrame:Destroy() end); InfoPanelFrame = nil end
+        end
     end)
 
-    -- WAYPOINT
+    -- ===== WAYPOINT =====
     Section("=== 🗺️ WAYPOINT ===", 2338)
     local WPInput = Input("> Waypoint name", 2370, "Base")
     Toggle("> ➕ ADD WAYPOINT", 2407, function(btn) AddWaypoint(WPInput.Text) end)
 
-    -- CHAT SPAM
+    -- ===== CHAT SPAM =====
     Section("=== CHAT SPAM ===", 2455)
     Toggle("> CHAT SPAM: OFF", 2487, function(btn)
         ChatSpamEnabled = not ChatSpamEnabled
@@ -2301,13 +2314,13 @@ local function CreateUI()
         if enterPressed and ChatInput.Text ~= "" then ChatSpamText = ChatInput.Text end
     end)
 
-    -- SERVER HOP
+    -- ===== SERVER HOP =====
     Section("=== 🌐 SERVER HOP ===", 2573)
     Toggle("> 🌐 SERVER HOP (RANDOM)", 2605, function(btn) DoServerHop() end)
     Half("> 🎯 BEST SERVER", 2645, 0, function(btn) DoBestServerHop() end)
     Half("> 🔄 REJOIN", 2645, 0.5, function(btn) DoRejoin() end)
 
-    -- TELEPORT KE ORANG
+    -- ===== TELEPORT KE ORANG =====
     Section("=== 🆕 TELEPORT KE ORANG ===", 2693)
     TeleportListFrame = Instance.new("ScrollingFrame")
     TeleportListFrame.Size = UDim2.new(1, -20, 0, 130)
@@ -2333,14 +2346,15 @@ local function CreateUI()
         end
     end)
 
-    -- TELEPORT
+    -- ===== TELEPORT =====
     Section("=== TELEPORT ===", 2875)
     Toggle("> TELEPORT TO MOUSE", 2907, function(btn) TeleportToMouse() end)
     Half("> SAVE LOC", 2947, 0, function(btn) SaveLocation() end)
     Half("> LOAD LOC", 2947, 0.5, function(btn) LoadLocation() end)
 
-    -- MENU BUTTON
+    -- ===== MENU BUTTON =====
     local ToggleMenuButton = Instance.new("TextButton")
+    ToggleMenuButton.Name = "ZetMenuBtn"
     ToggleMenuButton.Size = UDim2.new(0, 50, 0, 50)
     ToggleMenuButton.Position = UDim2.new(0, 10, 0.5, -25)
     ToggleMenuButton.BackgroundColor3 = THEME.ButtonActive
@@ -2363,6 +2377,7 @@ local function CreateUI()
         MenuVisible = false
         MainHub.Visible = false
     end)
+
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode == MenuKey then
@@ -2371,6 +2386,7 @@ local function CreateUI()
         end
     end)
 
+    -- ===== DRAGGABLE =====
     local function MakeDraggable(frame)
         local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
         frame.InputBegan:Connect(function(input)
@@ -2393,10 +2409,19 @@ local function CreateUI()
     end
     MakeDraggable(MainHub)
 
-    -- INFO PANEL (setelah UI utama siap)
-    if InfoPanelEnabled then CreateInfoPanel() end
+    -- ===== AUTO-CLAMP biar gak keluar screen =====
+    MainHub:GetPropertyChangedSignal("Position"):Connect(function()
+        local vpSize = Camera.ViewportSize
+        local pos = MainHub.AbsolutePosition
+        local size = MainHub.AbsoluteSize
+        local newX = math.clamp(pos.X, 0, math.max(0, vpSize.X - size.X))
+        local newY = math.clamp(pos.Y, 0, math.max(0, vpSize.Y - size.Y))
+        if pos.X ~= newX or pos.Y ~= newY then
+            MainHub.Position = UDim2.new(0, newX, 0, newY)
+        end
+    end)
 
-    -- 🔴 LOADING → LANGSUNG MUNCUL MENU
+    -- ===== LOADING ANIMATION → LANGSUNG MUNCUL =====
     task.spawn(function()
         for i = 1, 50 do
             task.wait(0.04)
@@ -2410,12 +2435,11 @@ local function CreateUI()
         MenuVisible = true
         IsLoggedIn = true
 
-        -- 🔴 AUTO ACTIVATE
+        -- AUTO ACTIVATE (cuma Anti-Kick + Reconnect)
         pcall(ActivateAntiKick)
         pcall(ActivateAutoReconnect)
-        pcall(EnableKillNotif)
 
-        Notify("V4.4 TESTING", "> LANGSUNG SIAP!", 3)
+        Notify("V4.4 TESTING", "> FULL FIX V2 LOADED!", 3)
         task.wait(0.5)
         pcall(RefreshTeleportList)
         print("[ZET] SUCCESS! Menu visible!")
