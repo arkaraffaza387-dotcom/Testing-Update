@@ -1,10 +1,9 @@
 --[[
-    ZetGames-AimLock-Advanserver V4.4 | TESTING BUILD (UJI COBA)
+    ZetGames-AimLock-Advanserver V4.4 | TESTING BUILD (FIXED)
     Theme: Red & Black
     Login: ❌ TANPA LOGIN — langsung muncul menu
     Night Lock: ❌ HAPUS
     15 Fitur V4.4 + Semua V4.3
-    Anti-Kick: ✅ SAFE MODE (Aktif)
 --]]
 
 --==============================================================
@@ -28,11 +27,10 @@ local Mouse = LocalPlayer:GetMouse()
 
 pcall(function() SoundService.RespectFilteringEnabled = false end)
 
-print("[ZET] Loading V4.4 TESTING...")
-task.wait(math.random(50, 200) / 100)
+print("[ZET] Loading V4.4 TESTING FIXED...")
 
 --==============================================================
--- 🎨 THEME SYSTEM (MERAH & HITAM DEFAULT)
+-- THEME (MERAH & HITAM DEFAULT)
 --==============================================================
 local ThemePresets = {
     Merah = {MainBG=Color3.fromRGB(10,10,10), PanelBG=Color3.fromRGB(15,15,15), SectionBG=Color3.fromRGB(40,0,0), Accent=Color3.fromRGB(255,0,0), AccentLight=Color3.fromRGB(255,80,80), AccentDark=Color3.fromRGB(150,0,0), ButtonBG=Color3.fromRGB(25,25,25), ButtonActive=Color3.fromRGB(100,0,0), Text=Color3.fromRGB(255,0,0), TextLight=Color3.fromRGB(255,100,100)},
@@ -77,7 +75,7 @@ print("[ZET] GUI Parent: " .. tostring(ScreenGui.Parent and ScreenGui.Parent.Nam
 --==============================================================
 -- STATE
 --==============================================================
-local IsLoggedIn = true  -- 🔴 TESTING: LANGSUNG LOGIN
+local IsLoggedIn = true
 local MenuVisible = true
 local MenuKey = Enum.KeyCode.RightControl
 
@@ -87,10 +85,6 @@ local function DisconnectKey(key)
         pcall(function() ActiveConnections[key]:Disconnect() end)
         ActiveConnections[key] = nil
     end
-end
-local function Track(key, conn)
-    DisconnectKey(key)
-    ActiveConnections[key] = conn
 end
 
 -- Feature Flags
@@ -133,11 +127,6 @@ local TracerColor = Color3.fromRGB(255, 0, 0)
 local RainbowESPEnabled = false
 local RainbowHue = 0
 
-local RadarEnabled = false
-local RadarRadius = 300
-local RadarObjects = {}
-local RadarFrame = nil
-
 local FlyNormalEnabled = false
 local FlyNormalSpeed = 100
 local FlyNormalMode = "Free"
@@ -177,8 +166,8 @@ local LastBeepTime = 0
 local MusicPlayerEnabled = false
 local MusicSound = nil
 local MusicPlaylist = {
-    {Name = "Kelingan Mantan", ID = "78450316593213", Category = "Chill"},
-    {Name = "Teh Hijau", ID = "111485011584825", Category = "Chill"},
+    {Name = "Kelingan Mantan", ID = "78450316593213"},
+    {Name = "Teh Hijau", ID = "111485011584825"},
 }
 local MusicCurrentIndex = 1
 local MusicVolume = 1
@@ -206,11 +195,7 @@ local InfoPanelEnabled = true
 
 local Waypoints = {}
 
--- Anti-Kick (No Night Lock)
 local AntiKickEnabled = true
-local KickLog = {}
-
--- Auto-Reconnect
 local AutoReconnectEnabled = true
 local ReconnectAttempts = 0
 local MaxReconnectAttempts = 5
@@ -223,7 +208,7 @@ local TeleportListContainer = nil
 local SavedLocation = nil
 local ServerHopRunning = false
 
-local FOVCircle
+local FOVCircle = nil
 pcall(function()
     FOVCircle = Drawing.new("Circle")
     FOVCircle.Visible = false
@@ -234,7 +219,7 @@ pcall(function()
     FOVCircle.NumSides = 90
 end)
 
-local OffScreenArrow
+local OffScreenArrow = nil
 pcall(function()
     OffScreenArrow = Drawing.new("Triangle")
     OffScreenArrow.Visible = false
@@ -328,7 +313,7 @@ local function DisableFOVLoop()
 end
 
 --==============================================================
--- OFF-SCREEN ARROW LOOP
+-- OFF-SCREEN ARROW
 --==============================================================
 local function EnableOffScreenArrow()
     DisconnectKey("OffScreenArrow")
@@ -339,15 +324,18 @@ local function EnableOffScreenArrow()
             return
         end
         local nearest, nearestDist = nil, math.huge
-        local myPos = LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position
-        if not myPos then return end
+        local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return end
         for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                local d = (player.Character.HumanoidRootPart.Position - myPos).Magnitude
-                if d < nearestDist then nearest = player; nearestDist = d end
+            if player ~= LocalPlayer and player.Character then
+                local root = player.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local d = (root.Position - myRoot.Position).Magnitude
+                    if d < nearestDist then nearest = player; nearestDist = d end
+                end
             end
         end
-        if nearest then
+        if nearest and nearest.Character then
             local root = nearest.Character:FindFirstChild("HumanoidRootPart")
             if root then
                 local sp, onScreen = Camera:WorldToViewportPoint(root.Position)
@@ -439,7 +427,7 @@ local function ActivateAutoReconnect()
 end
 
 --==============================================================
--- NPC DETECTION
+-- NPC
 --==============================================================
 local function IsNPC(model)
     if not model or not model:IsA("Model") then return false end
@@ -1203,7 +1191,7 @@ local function DisableESPLoop()
 end
 
 --==============================================================
--- AIMBOT + SILENT + TARGET PRIORITY
+-- AIMBOT
 --==============================================================
 local function IsSameTeam(player)
     if not AimbotTeamCheck then return false end
@@ -1461,10 +1449,8 @@ local function DisableKillNotif() DisconnectKey("KillNotif") end
 --==============================================================
 -- INFO PANEL
 --==============================================================
-local InfoPanelFrame = nil
-local InfoPanelLabel = nil
 local function CreateInfoPanel()
-    InfoPanelFrame = Instance.new("Frame")
+    local InfoPanelFrame = Instance.new("Frame")
     InfoPanelFrame.Size = UDim2.new(0, 180, 0, 70)
     InfoPanelFrame.Position = UDim2.new(1, -190, 1, -80)
     InfoPanelFrame.BackgroundColor3 = THEME.PanelBG
@@ -1475,7 +1461,7 @@ local function CreateInfoPanel()
     InfoPanelFrame.Parent = ScreenGui
     Instance.new("UICorner", InfoPanelFrame).CornerRadius = UDim.new(0, 8)
 
-    InfoPanelLabel = Instance.new("TextLabel")
+    local InfoPanelLabel = Instance.new("TextLabel")
     InfoPanelLabel.Size = UDim2.new(1, -10, 1, -10)
     InfoPanelLabel.Position = UDim2.new(0, 5, 0, 5)
     InfoPanelLabel.BackgroundTransparency = 1
@@ -1491,56 +1477,13 @@ local function CreateInfoPanel()
     task.spawn(function()
         while task.wait(1) do
             pcall(function()
-                local fps = math.floor(1 / RunService.RenderStepped:Wait())
                 local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
                 local pc = #Players:GetPlayers()
                 local time = os.date("%H:%M:%S")
-                InfoPanelLabel.Text = "FPS: " .. fps .. " | Ping: " .. ping .. "ms\nPlayers: " .. pc .. " | Time: " .. time
+                InfoPanelLabel.Text = "Ping: " .. ping .. "ms\nPlayers: " .. pc .. " | " .. time
             end)
         end
     end)
-end
-
---==============================================================
--- CONFIG SAVE/LOAD
---==============================================================
-local function SaveConfig()
-    local cfg = {
-        version = "4.4-testing",
-        aimbot = AimbotEnabled,
-        silentaim = SilentAimEnabled,
-        targetpriority = TargetPriority,
-        fov = FOVRadius,
-        fovcolor = tostring(FOVColor),
-        theme = CurrentThemeName,
-        flyspeed = FlyNormalSpeed,
-        speed = SpeedMultiplier,
-        hitbox = HitboxSize,
-        offscreenarrow = OffScreenArrowEnabled,
-        autoshoot = AutoShootEnabled,
-        killnotif = KillNotifEnabled,
-    }
-    return HttpService:JSONEncode(cfg)
-end
-
-local function LoadConfig(str)
-    local ok, cfg = pcall(function() return HttpService:JSONDecode(str) end)
-    if not ok or not cfg then Notify("Config", "> INVALID", 2); return end
-    if cfg.aimbot ~= nil then AimbotEnabled = cfg.aimbot end
-    if cfg.silentaim ~= nil then SilentAimEnabled = cfg.silentaim end
-    if cfg.targetpriority then TargetPriority = cfg.targetpriority end
-    if cfg.fov then FOVRadius = cfg.fov end
-    if cfg.theme then
-        local preset = ThemePresets[cfg.theme]
-        if preset then for k, v in pairs(preset) do THEME[k] = v end; CurrentThemeName = cfg.theme end
-    end
-    if cfg.flyspeed then FlyNormalSpeed = cfg.flyspeed end
-    if cfg.speed then SpeedMultiplier = cfg.speed end
-    if cfg.hitbox then HitboxSize = cfg.hitbox end
-    if cfg.offscreenarrow ~= nil then OffScreenArrowEnabled = cfg.offscreenarrow end
-    if cfg.autoshoot ~= nil then AutoShootEnabled = cfg.autoshoot end
-    if cfg.killnotif ~= nil then KillNotifEnabled = cfg.killnotif end
-    Notify("Config", "> LOADED SUCCESS", 3)
 end
 
 --==============================================================
@@ -1693,12 +1636,12 @@ local function GotoWaypoint(wp)
 end
 
 --==============================================================
--- UI BUILDER
+-- 🚀 UI BUILDER (FUNGSI INI YANG BIKIN MENU MUNCUL)
 --==============================================================
 local function CreateUI()
     print("[ZET] Creating UI...")
 
-    -- LOADING
+    -- LOADING SCREEN
     local LoadingScreen = Instance.new("Frame")
     LoadingScreen.Size = UDim2.new(1, 0, 1, 0)
     LoadingScreen.BackgroundColor3 = Color3.fromRGB(5, 0, 0)
@@ -1707,8 +1650,8 @@ local function CreateUI()
     LoadingScreen.Parent = ScreenGui
 
     local LoadingBg = Instance.new("Frame")
-    LoadingBg.Size = UDim2.new(0, 360, 0, 200)
-    LoadingBg.Position = UDim2.new(0.5, -180, 0.5, -100)
+    LoadingBg.Size = UDim2.new(0, 340, 0, 180)
+    LoadingBg.Position = UDim2.new(0.5, -170, 0.5, -90)
     LoadingBg.BackgroundColor3 = THEME.MainBG
     LoadingBg.BorderColor3 = THEME.Accent
     LoadingBg.BorderSizePixel = 2
@@ -1731,7 +1674,7 @@ local function CreateUI()
     LTag.Size = UDim2.new(1, -20, 0, 18)
     LTag.Position = UDim2.new(0, 10, 0, 45)
     LTag.BackgroundTransparency = 1
-    LTag.Text = "[ UJI COBA - NO LOGIN ]"
+    LTag.Text = "[ FIXED - NO LOGIN ]"
     LTag.TextColor3 = Color3.fromRGB(255, 200, 0)
     LTag.Font = Enum.Font.Code
     LTag.TextSize = 9
@@ -1803,7 +1746,7 @@ local function CreateUI()
     TitleText.Size = UDim2.new(1, -50, 1, 0)
     TitleText.Position = UDim2.new(0, 10, 0, 0)
     TitleText.BackgroundTransparency = 1
-    TitleText.Text = "● V4.4 TESTING [UJI COBA]"
+    TitleText.Text = "● V4.4 TESTING [FIXED]"
     TitleText.TextColor3 = THEME.Text
     TitleText.Font = Enum.Font.Code
     TitleText.TextSize = 11
@@ -1938,12 +1881,12 @@ local function CreateUI()
         return b
     end
 
-    -- SAFE MODE (Tanpa Night Lock)
+    -- SAFE MODE
     Section("=== 🛡️ SAFE MODE (LOCKED) ===", 10)
     LockedToggle("> 🛡️ ANTI-KICK: ON (SAFE)", 42)
     LockedToggle("> 🔄 AUTO-RECONNECT: ON", 82)
 
-    -- THEME SWITCHER
+    -- THEME
     Section("=== 🎨 THEME SWITCHER ===", 130)
     local ThemeLbl = Instance.new("TextLabel")
     ThemeLbl.Size = UDim2.new(1, -20, 0, 18)
@@ -1994,39 +1937,11 @@ local function CreateUI()
     ThemeBtn("UNGU", "Ungu", 0.615)
     ThemeBtn("KUNING", "Kuning", 0.82)
 
-    -- CONFIG
-    Section("=== 💾 CONFIG ===", 228)
-    local ConfigOutput = Instance.new("TextBox")
-    ConfigOutput.Size = UDim2.new(1, -20, 0, 55)
-    ConfigOutput.Position = UDim2.new(0, 10, 0, 260)
-    ConfigOutput.BackgroundColor3 = THEME.PanelBG
-    ConfigOutput.BorderColor3 = THEME.Accent
-    ConfigOutput.BorderSizePixel = 1
-    ConfigOutput.PlaceholderText = "> Config string"
-    ConfigOutput.PlaceholderColor3 = Color3.fromRGB(100, 50, 50)
-    ConfigOutput.Text = ""
-    ConfigOutput.TextColor3 = THEME.Text
-    ConfigOutput.Font = Enum.Font.Code
-    ConfigOutput.TextSize = 9
-    ConfigOutput.TextWrapped = true
-    ConfigOutput.ZIndex = 12
-    ConfigOutput.Parent = ScrollContent
-    Instance.new("UICorner", ConfigOutput).CornerRadius = UDim.new(0, 4)
-
-    Half("> 💾 SAVE", 323, 0, function(btn)
-        local cfg = SaveConfig()
-        ConfigOutput.Text = cfg
-        if setclipboard then setclipboard(cfg); Notify("Config", "> COPIED", 3) end
-    end)
-    Half("> 📂 LOAD", 323, 0.5, function(btn)
-        if ConfigOutput.Text ~= "" then LoadConfig(ConfigOutput.Text) end
-    end)
-
     -- USER INFO
-    Section("=== USER INFORMATION ===", 360)
+    Section("=== USER INFORMATION ===", 228)
     local UIF = Instance.new("Frame")
     UIF.Size = UDim2.new(1, -20, 0, 80)
-    UIF.Position = UDim2.new(0, 10, 0, 392)
+    UIF.Position = UDim2.new(0, 10, 0, 260)
     UIF.BackgroundColor3 = THEME.PanelBG
     UIF.BorderColor3 = THEME.Accent
     UIF.BorderSizePixel = 1
@@ -2071,30 +1986,30 @@ local function CreateUI()
     BuildLbl.Parent = UIF
 
     -- MAIN FEATURES
-    Section("=== MAIN FEATURES ===", 485)
+    Section("=== MAIN FEATURES ===", 353)
 
-    Toggle("> FPS BOOST: OFF", 517, function(btn)
+    Toggle("> FPS BOOST: OFF", 385, function(btn)
         FPSBoostEnabled = not FPSBoostEnabled
         btn.Text = FPSBoostEnabled and "> FPS BOOST: ON" or "> FPS BOOST: OFF"
         btn.BackgroundColor3 = FPSBoostEnabled and THEME.ButtonActive or THEME.ButtonBG
         if FPSBoostEnabled then EnableFPSBoost() else DisableFPSBoost() end
     end)
 
-    Toggle("> FULLBRIGHT: OFF", 557, function(btn)
+    Toggle("> FULLBRIGHT: OFF", 425, function(btn)
         FullbrightEnabled = not FullbrightEnabled
         btn.Text = FullbrightEnabled and "> FULLBRIGHT: ON" or "> FULLBRIGHT: OFF"
         btn.BackgroundColor3 = FullbrightEnabled and THEME.ButtonActive or THEME.ButtonBG
         if FullbrightEnabled then EnableFullbright() else DisableFullbright() end
     end)
 
-    Toggle("> SPEED HACK: OFF", 597, function(btn)
+    Toggle("> SPEED HACK: OFF", 465, function(btn)
         SpeedHackEnabled = not SpeedHackEnabled
         btn.Text = SpeedHackEnabled and "> SPEED HACK: ON" or "> SPEED HACK: OFF"
         btn.BackgroundColor3 = SpeedHackEnabled and THEME.ButtonActive or THEME.ButtonBG
         if SpeedHackEnabled then EnableSpeedHack() else DisableSpeedHack() end
     end)
 
-    local SpeedInput = Input("> Speed (16-500)", 637, tostring(SpeedMultiplier))
+    local SpeedInput = Input("> Speed (16-500)", 505, tostring(SpeedMultiplier))
     SpeedInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local ns = tonumber(SpeedInput.Text)
@@ -2103,46 +2018,46 @@ local function CreateUI()
         end
     end)
 
-    Toggle("> INFINITE JUMP: OFF", 673, function(btn)
+    Toggle("> INFINITE JUMP: OFF", 541, function(btn)
         InfiniteJumpEnabled = not InfiniteJumpEnabled
         btn.Text = InfiniteJumpEnabled and "> INFINITE JUMP: ON" or "> INFINITE JUMP: OFF"
         btn.BackgroundColor3 = InfiniteJumpEnabled and THEME.ButtonActive or THEME.ButtonBG
         if InfiniteJumpEnabled then EnableInfiniteJump() else DisableInfiniteJump() end
     end)
 
-    Toggle("> NOCLIP: OFF", 713, function(btn)
+    Toggle("> NOCLIP: OFF", 581, function(btn)
         NoclipEnabled = not NoclipEnabled
         btn.Text = NoclipEnabled and "> NOCLIP: ON" or "> NOCLIP: OFF"
         btn.BackgroundColor3 = NoclipEnabled and THEME.ButtonActive or THEME.ButtonBG
         if NoclipEnabled then EnableNoclip() else DisableNoclip() end
     end)
 
-    Toggle("> 👻 INVISIBLE: OFF", 753, function(btn)
+    Toggle("> 👻 INVISIBLE: OFF", 621, function(btn)
         InvisibleEnabled = not InvisibleEnabled
         btn.Text = InvisibleEnabled and "> 👻 INVISIBLE: ON" or "> 👻 INVISIBLE: OFF"
         btn.BackgroundColor3 = InvisibleEnabled and THEME.ButtonActive or THEME.ButtonBG
         if InvisibleEnabled then EnableInvisible() else DisableInvisible() end
     end)
 
-    Toggle("> ⚡ DASH: OFF — SHIFT", 793, function(btn)
+    Toggle("> ⚡ DASH: OFF (SHIFT)", 661, function(btn)
         DashEnabled = not DashEnabled
-        btn.Text = DashEnabled and "> ⚡ DASH: ON (SHIFT)" or "> ⚡ DASH: OFF (SHIFT)"
+        btn.Text = DashEnabled and "> ⚡ DASH: ON" or "> ⚡ DASH: OFF (SHIFT)"
         btn.BackgroundColor3 = DashEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     -- FLY
-    Section("=== 🛫 FLY NORMAL ===", 841)
-    Toggle("> FLY NORMAL: OFF", 873, function(btn)
+    Section("=== 🛫 FLY NORMAL ===", 709)
+    Toggle("> FLY NORMAL: OFF", 741, function(btn)
         FlyNormalEnabled = not FlyNormalEnabled
         if FlyNormalEnabled then btn.Text = "> FLY NORMAL: ON"; btn.BackgroundColor3 = THEME.ButtonActive; EnableFlyNormal()
         else btn.Text = "> FLY NORMAL: OFF"; btn.BackgroundColor3 = THEME.ButtonBG; DisableFlyNormal() end
     end)
-    Half("> MODE: FREE", 913, 0, function(btn)
+    Half("> MODE: FREE", 781, 0, function(btn)
         FlyNormalMode = FlyNormalMode == "Free" and "Hover" or "Free"
         btn.Text = "> MODE: " .. string.upper(FlyNormalMode)
     end)
-    Half("> KEY: WASD", 913, 0.5, function(btn) Notify("Fly", "> WASD + Space", 2) end)
-    local FlySpeedInput = Input("> Fly Speed (10-500)", 949, tostring(FlyNormalSpeed))
+    Half("> KEY: WASD", 781, 0.5, function(btn) Notify("Fly", "> WASD + Space", 2) end)
+    local FlySpeedInput = Input("> Fly Speed (10-500)", 817, tostring(FlyNormalSpeed))
     FlySpeedInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local ns = tonumber(FlySpeedInput.Text)
@@ -2152,11 +2067,11 @@ local function CreateUI()
     end)
 
     -- AIMBOT
-    Section("=== 🎯 AIMBOT + FOV + SILENT ===", 993)
+    Section("=== 🎯 AIMBOT + FOV ===", 861)
 
     local AimbotBtn = Instance.new("TextButton")
     AimbotBtn.Size = UDim2.new(1, -20, 0, 42)
-    AimbotBtn.Position = UDim2.new(0, 10, 0, 1025)
+    AimbotBtn.Position = UDim2.new(0, 10, 0, 893)
     AimbotBtn.BackgroundColor3 = THEME.ButtonBG
     AimbotBtn.BorderColor3 = THEME.Accent
     AimbotBtn.BorderSizePixel = 2
@@ -2173,25 +2088,25 @@ local function CreateUI()
         else AimbotBtn.Text = "> AIMBOT: OFF"; AimbotBtn.BackgroundColor3 = THEME.ButtonBG; AimbotStickyTarget = nil; AimbotStickyType = nil; DisconnectKey("Aimbot") end
     end)
 
-    Toggle("> 🎯 SILENT AIM: OFF", 1077, function(btn)
+    Toggle("> 🎯 SILENT AIM: OFF", 945, function(btn)
         SilentAimEnabled = not SilentAimEnabled
         btn.Text = SilentAimEnabled and "> 🎯 SILENT AIM: ON" or "> 🎯 SILENT AIM: OFF"
         btn.BackgroundColor3 = SilentAimEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Half("> FOV: OFF", 1117, 0, function(btn)
+    Half("> FOV: OFF", 985, 0, function(btn)
         FOVCircleEnabled = not FOVCircleEnabled
         btn.Text = FOVCircleEnabled and "> FOV: ON" or "> FOV: OFF"
         btn.BackgroundColor3 = FOVCircleEnabled and THEME.ButtonActive or THEME.ButtonBG
         if FOVCircleEnabled then EnableFOVLoop() else DisableFOVLoop() end
     end)
-    Half("> TEAM: OFF", 1117, 0.5, function(btn)
+    Half("> TEAM: OFF", 985, 0.5, function(btn)
         AimbotTeamCheck = not AimbotTeamCheck
         btn.Text = AimbotTeamCheck and "> TEAM: ON" or "> TEAM: OFF"
         btn.BackgroundColor3 = AimbotTeamCheck and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    local FOVInput = Input("> FOV Radius (50-5000)", 1155, tostring(FOVRadius))
+    local FOVInput = Input("> FOV Radius (50-5000)", 1023, tostring(FOVRadius))
     FOVInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nf = tonumber(FOVInput.Text)
@@ -2200,7 +2115,7 @@ local function CreateUI()
         end
     end)
 
-    local FOVThicknessInput = Input("> FOV Thickness (1-10)", 1191, tostring(FOVThickness))
+    local FOVThicknessInput = Input("> FOV Thickness (1-10)", 1059, tostring(FOVThickness))
     FOVThicknessInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nt = tonumber(FOVThicknessInput.Text)
@@ -2209,155 +2124,66 @@ local function CreateUI()
         end
     end)
 
-    Toggle("> KEYBIND AIMBOT (E): OFF", 1227, function(btn)
+    Toggle("> KEYBIND AIMBOT (E): OFF", 1095, function(btn)
         AimKeybindEnabled = not AimKeybindEnabled
         btn.Text = AimKeybindEnabled and "> KEYBIND (E): ON" or "> KEYBIND (E): OFF"
         btn.BackgroundColor3 = AimKeybindEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    -- TARGET PRIORITY
-    local PriorityLbl = Instance.new("TextLabel")
-    PriorityLbl.Size = UDim2.new(1, -20, 0, 18)
-    PriorityLbl.Position = UDim2.new(0, 10, 0, 1267)
-    PriorityLbl.BackgroundTransparency = 1
-    PriorityLbl.Text = "> TARGET PRIORITY: CLOSEST"
-    PriorityLbl.TextColor3 = THEME.Text
-    PriorityLbl.Font = Enum.Font.Code
-    PriorityLbl.TextSize = 10
-    PriorityLbl.TextXAlignment = Enum.TextXAlignment.Left
-    PriorityLbl.ZIndex = 12
-    PriorityLbl.Parent = ScrollContent
-
-    local PriorityFrame = Instance.new("Frame")
-    PriorityFrame.Size = UDim2.new(1, -20, 0, 30)
-    PriorityFrame.Position = UDim2.new(0, 10, 0, 1289)
-    PriorityFrame.BackgroundTransparency = 1
-    PriorityFrame.ZIndex = 12
-    PriorityFrame.Parent = ScrollContent
-
-    local function PriorityBtn(text, mode, xPos)
-        local b = Instance.new("TextButton")
-        b.Size = UDim2.new(0.19, 0, 1, 0)
-        b.Position = UDim2.new(xPos, 0, 0, 0)
-        b.BackgroundColor3 = THEME.ButtonBG
-        b.BorderColor3 = THEME.Accent
-        b.BorderSizePixel = 1
-        b.Text = text
-        b.TextColor3 = THEME.Text
-        b.Font = Enum.Font.Code
-        b.TextSize = 9
-        b.ZIndex = 13
-        b.Parent = PriorityFrame
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 3)
-        b.MouseButton1Click:Connect(function()
-            TargetPriority = mode
-            PriorityLbl.Text = "> TARGET PRIORITY: " .. string.upper(text)
-        end)
-    end
-    PriorityBtn("CLOSEST", "Closest", 0)
-    PriorityBtn("LOWEST", "Lowest", 0.205)
-    PriorityBtn("FARTHEST", "Farthest", 0.41)
-    PriorityBtn("CROSSHAIR", "Crosshair", 0.615)
-    PriorityBtn("ALL", "Closest", 0.82)
-
-    Toggle("> WALL CHECK: OFF", 1327, function(btn)
+    Toggle("> WALL CHECK: OFF", 1135, function(btn)
         AimbotWallCheck = not AimbotWallCheck
         btn.Text = AimbotWallCheck and "> WALL: ON" or "> WALL: OFF"
         btn.BackgroundColor3 = AimbotWallCheck and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Toggle("> 🔫 AUTO SHOOT: OFF", 1367, function(btn)
+    Toggle("> 🔫 AUTO SHOOT: OFF", 1175, function(btn)
         AutoShootEnabled = not AutoShootEnabled
         btn.Text = AutoShootEnabled and "> AUTO SHOOT: ON" or "> AUTO SHOOT: OFF"
         btn.BackgroundColor3 = AutoShootEnabled and THEME.ButtonActive or THEME.ButtonBG
         if AutoShootEnabled then EnableAimbotLoop() end
     end)
 
-    Toggle("> 📡 OFF-SCREEN ARROW: OFF", 1407, function(btn)
+    Toggle("> 📡 OFF-SCREEN ARROW: OFF", 1215, function(btn)
         OffScreenArrowEnabled = not OffScreenArrowEnabled
         btn.Text = OffScreenArrowEnabled and "> OFF-ARROW: ON" or "> OFF-ARROW: OFF"
         btn.BackgroundColor3 = OffScreenArrowEnabled and THEME.ButtonActive or THEME.ButtonBG
         if OffScreenArrowEnabled then EnableOffScreenArrow() else DisableOffScreenArrow() end
     end)
 
-    -- FOV COLOR
-    local FOVColorLbl = Instance.new("TextLabel")
-    FOVColorLbl.Size = UDim2.new(1, -20, 0, 18)
-    FOVColorLbl.Position = UDim2.new(0, 10, 0, 1447)
-    FOVColorLbl.BackgroundTransparency = 1
-    FOVColorLbl.Text = "> FOV COLOR:"
-    FOVColorLbl.TextColor3 = THEME.Text
-    FOVColorLbl.Font = Enum.Font.Code
-    FOVColorLbl.TextSize = 10
-    FOVColorLbl.TextXAlignment = Enum.TextXAlignment.Left
-    FOVColorLbl.ZIndex = 12
-    FOVColorLbl.Parent = ScrollContent
-
-    local FOVColorFrame = Instance.new("Frame")
-    FOVColorFrame.Size = UDim2.new(1, -20, 0, 30)
-    FOVColorFrame.Position = UDim2.new(0, 10, 0, 1469)
-    FOVColorFrame.BackgroundTransparency = 1
-    FOVColorFrame.ZIndex = 12
-    FOVColorFrame.Parent = ScrollContent
-
-    local function FOVColorBtn(text, color, xPos)
-        local b = Instance.new("TextButton")
-        b.Size = UDim2.new(0.24, 0, 1, 0)
-        b.Position = UDim2.new(xPos, 0, 0, 0)
-        b.BackgroundColor3 = color
-        b.BorderColor3 = THEME.Accent
-        b.BorderSizePixel = 1
-        b.Text = text
-        b.TextColor3 = Color3.fromRGB(255, 255, 255)
-        b.Font = Enum.Font.Code
-        b.TextSize = 9
-        b.ZIndex = 13
-        b.Parent = FOVColorFrame
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 3)
-        b.MouseButton1Click:Connect(function()
-            FOVColor = color
-            if FOVCircle then pcall(function() FOVCircle.Color = color end) end
-        end)
-    end
-    FOVColorBtn("MERAH", Color3.fromRGB(255, 30, 30), 0)
-    FOVColorBtn("BIRU", Color3.fromRGB(0, 150, 255), 0.255)
-    FOVColorBtn("HIJAU", Color3.fromRGB(0, 255, 100), 0.51)
-    FOVColorBtn("KUNING", Color3.fromRGB(255, 220, 0), 0.765)
-
     -- ESP
-    Section("=== 👁️ FULL ESP ===", 1517)
-    Toggle("> ESP MASTER: OFF", 1549, function(btn)
+    Section("=== 👁️ FULL ESP ===", 1263)
+    Toggle("> ESP MASTER: OFF", 1295, function(btn)
         ESPEnabled = not ESPEnabled
         btn.Text = ESPEnabled and "> ESP MASTER: ON" or "> ESP MASTER: OFF"
         btn.BackgroundColor3 = ESPEnabled and THEME.ButtonActive or THEME.ButtonBG
         if ESPEnabled then EnableESPLoop() else DisableESPLoop() end
     end)
-    Toggle("> 🌈 RAINBOW ESP: OFF", 1589, function(btn)
+    Toggle("> 🌈 RAINBOW ESP: OFF", 1335, function(btn)
         RainbowESPEnabled = not RainbowESPEnabled
         btn.Text = RainbowESPEnabled and "> 🌈 RAINBOW: ON" or "> 🌈 RAINBOW: OFF"
         btn.BackgroundColor3 = RainbowESPEnabled and THEME.ButtonActive or THEME.ButtonBG
         if RainbowESPEnabled then EnableRainbowESP() else DisableRainbowESP() end
     end)
-    Toggle("> NPC ESP: OFF", 1629, function(btn)
+    Toggle("> NPC ESP: OFF", 1375, function(btn)
         NPCEspEnabled = not NPCEspEnabled
         btn.Text = NPCEspEnabled and "> NPC ESP: ON" or "> NPC ESP: OFF"
         btn.BackgroundColor3 = NPCEspEnabled and THEME.ButtonActive or THEME.ButtonBG
         if not NPCEspEnabled then for model, _ in pairs(NPCESPObjects) do RemoveNPCEsp(model) end end
     end)
-    Toggle("> NPC DETECTION: OFF", 1669, function(btn)
+    Toggle("> NPC DETECTION: OFF", 1415, function(btn)
         NPCDetectionEnabled = not NPCDetectionEnabled
         btn.Text = NPCDetectionEnabled and "> NPC DETECTION: ON" or "> NPC DETECTION: OFF"
         btn.BackgroundColor3 = NPCDetectionEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     -- HITBOX
-    Section("=== 🎯 HITBOX ===", 1717)
-    Toggle("> HITBOX: OFF", 1749, function(btn)
+    Section("=== 🎯 HITBOX ===", 1463)
+    Toggle("> HITBOX: OFF", 1495, function(btn)
         HitboxEnabled = not HitboxEnabled
         if HitboxEnabled then btn.Text = "> HITBOX: ON"; btn.BackgroundColor3 = THEME.ButtonActive; EnableHitboxExpander()
         else btn.Text = "> HITBOX: OFF"; btn.BackgroundColor3 = THEME.ButtonBG; DisableHitboxExpander() end
     end)
-    local HitboxInput = Input("> Size (1-1000)", 1789, tostring(HitboxSize))
+    local HitboxInput = Input("> Size (1-1000)", 1535, tostring(HitboxSize))
     HitboxInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nh = tonumber(HitboxInput.Text)
@@ -2366,9 +2192,9 @@ local function CreateUI()
         end
     end)
 
-    -- DRONE MODE
-    Section("=== 🚁 DRONE MODE ===", 1835)
-    Toggle("> DRONE CAMERA: OFF", 1867, function(btn)
+    -- DRONE
+    Section("=== 🚁 DRONE MODE ===", 1581)
+    Toggle("> DRONE CAMERA: OFF", 1613, function(btn)
         DroneModeEnabled = not DroneModeEnabled
         btn.Text = DroneModeEnabled and "> DRONE: ON" or "> DRONE: OFF"
         btn.BackgroundColor3 = DroneModeEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2376,20 +2202,20 @@ local function CreateUI()
     end)
 
     -- SURVIVAL
-    Section("=== SURVIVAL ===", 1915)
-    Toggle("> AUTO RESPAWN: OFF", 1947, function(btn)
+    Section("=== SURVIVAL ===", 1661)
+    Toggle("> AUTO RESPAWN: OFF", 1693, function(btn)
         AutoRespawnEnabled = not AutoRespawnEnabled
         btn.Text = AutoRespawnEnabled and "> AUTO RESPAWN: ON" or "> AUTO RESPAWN: OFF"
         btn.BackgroundColor3 = AutoRespawnEnabled and THEME.ButtonActive or THEME.ButtonBG
         if AutoRespawnEnabled then EnableAutoRespawn() else DisableAutoRespawn() end
     end)
-    Toggle("> ANTI-FLING: OFF", 1987, function(btn)
+    Toggle("> ANTI-FLING: OFF", 1733, function(btn)
         AntiFlingEnabled = not AntiFlingEnabled
         btn.Text = AntiFlingEnabled and "> ANTI-FLING: ON" or "> ANTI-FLING: OFF"
         btn.BackgroundColor3 = AntiFlingEnabled and THEME.ButtonActive or THEME.ButtonBG
         if AntiFlingEnabled then EnableAntiFling() else DisableAntiFling() end
     end)
-    Toggle("> ANTI-AFK: OFF", 2027, function(btn)
+    Toggle("> ANTI-AFK: OFF", 1773, function(btn)
         AntiAFKEnabled = not AntiAFKEnabled
         btn.Text = AntiAFKEnabled and "> ANTI-AFK: ON" or "> ANTI-AFK: OFF"
         btn.BackgroundColor3 = AntiAFKEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2397,22 +2223,22 @@ local function CreateUI()
     end)
 
     -- FLY-VOID
-    Section("=== 🕳️ FLY-VOID V2 ===", 2075)
-    Toggle("> FLY-VOID: OFF", 2107, function(btn)
+    Section("=== 🕳️ FLY-VOID V2 ===", 1821)
+    Toggle("> FLY-VOID: OFF", 1853, function(btn)
         FlyVoidEnabled = not FlyVoidEnabled
         if FlyVoidEnabled then btn.Text = "> FLY-VOID: ON"; btn.BackgroundColor3 = THEME.ButtonActive; EnableFlyVoid()
         else btn.Text = "> FLY-VOID: OFF"; btn.BackgroundColor3 = THEME.ButtonBG; DisableFlyVoid() end
     end)
-    Half("> HIDE: OFF", 2147, 0, function(btn)
+    Half("> HIDE: OFF", 1893, 0, function(btn)
         FlyVoidHideMode = not FlyVoidHideMode
         btn.Text = FlyVoidHideMode and "> HIDE: ON" or "> HIDE: OFF"
         btn.BackgroundColor3 = FlyVoidHideMode and THEME.ButtonActive or THEME.ButtonBG
     end)
-    Half("> KEY: V", 2147, 0.5, function(btn) Notify("Fly-Void", "> Tekan V", 2) end)
+    Half("> KEY: V", 1893, 0.5, function(btn) Notify("Fly-Void", "> Tekan V", 2) end)
 
     -- SOUND
-    Section("=== SOUND ESP ===", 2195)
-    Toggle("> SOUND ESP: OFF", 2227, function(btn)
+    Section("=== SOUND ESP ===", 1941)
+    Toggle("> SOUND ESP: OFF", 1973, function(btn)
         SoundESPEnabled = not SoundESPEnabled
         btn.Text = SoundESPEnabled and "> SOUND ESP: ON" or "> SOUND ESP: OFF"
         btn.BackgroundColor3 = SoundESPEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2420,29 +2246,29 @@ local function CreateUI()
     end)
 
     -- MUSIC
-    Section("=== 🎵 MUSIC PLAYLIST V2 ===", 2275)
-    Toggle("> MUSIC: OFF", 2307, function(btn)
+    Section("=== 🎵 MUSIC PLAYLIST V2 ===", 2021)
+    Toggle("> MUSIC: OFF", 2053, function(btn)
         MusicPlayerEnabled = not MusicPlayerEnabled
         btn.Text = MusicPlayerEnabled and "> MUSIC: ON" or "> MUSIC: OFF"
         btn.BackgroundColor3 = MusicPlayerEnabled and THEME.ButtonActive or THEME.ButtonBG
         if MusicPlayerEnabled then PlayMusic() else StopMusic() end
     end)
-    Half("> ⏮ PREV", 2347, 0, function(btn) PrevMusic() end)
-    Half("> ⏭ NEXT", 2347, 0.5, function(btn) NextMusic() end)
-    Half("> SHUFFLE: OFF", 2384, 0, function(btn)
+    Half("> ⏮ PREV", 2093, 0, function(btn) PrevMusic() end)
+    Half("> ⏭ NEXT", 2093, 0.5, function(btn) NextMusic() end)
+    Half("> SHUFFLE: OFF", 2130, 0, function(btn)
         MusicShuffle = not MusicShuffle
         btn.Text = MusicShuffle and "> SHUFFLE: ON" or "> SHUFFLE: OFF"
         btn.BackgroundColor3 = MusicShuffle and THEME.ButtonActive or THEME.ButtonBG
     end)
-    Half("> REPEAT: ON", 2384, 0.5, function(btn)
+    Half("> REPEAT: ON", 2130, 0.5, function(btn)
         MusicRepeatAll = not MusicRepeatAll
         btn.Text = MusicRepeatAll and "> REPEAT: ON" or "> REPEAT: OFF"
         btn.BackgroundColor3 = MusicRepeatAll and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     -- KILL NOTIF
-    Section("=== 🔔 KILL/DEATH NOTIF ===", 2432)
-    Toggle("> KILL NOTIF: ON", 2464, function(btn)
+    Section("=== 🔔 KILL NOTIF ===", 2178)
+    Toggle("> KILL NOTIF: ON", 2210, function(btn)
         KillNotifEnabled = not KillNotifEnabled
         btn.Text = KillNotifEnabled and "> KILL NOTIF: ON" or "> KILL NOTIF: OFF"
         btn.BackgroundColor3 = KillNotifEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2450,88 +2276,42 @@ local function CreateUI()
     end)
 
     -- INFO PANEL
-    Section("=== 📊 INFO PANEL ===", 2512)
-    Toggle("> INFO PANEL: ON", 2544, function(btn)
+    Section("=== 📊 INFO PANEL ===", 2258)
+    Toggle("> INFO PANEL: ON", 2290, function(btn)
         InfoPanelEnabled = not InfoPanelEnabled
         btn.Text = InfoPanelEnabled and "> INFO PANEL: ON" or "> INFO PANEL: OFF"
         btn.BackgroundColor3 = InfoPanelEnabled and THEME.ButtonActive or THEME.ButtonBG
-        if InfoPanelFrame then InfoPanelFrame.Visible = InfoPanelEnabled end
     end)
 
     -- WAYPOINT
-    Section("=== 🗺️ WAYPOINT ===", 2592)
-    local WPInput = Input("> Waypoint name", 2624, "Base")
-    Toggle("> ➕ ADD WAYPOINT", 2661, function(btn) AddWaypoint(WPInput.Text) end)
-    local WPListFrame = Instance.new("ScrollingFrame")
-    WPListFrame.Size = UDim2.new(1, -20, 0, 100)
-    WPListFrame.Position = UDim2.new(0, 10, 0, 2701)
-    WPListFrame.BackgroundColor3 = THEME.PanelBG
-    WPListFrame.BorderColor3 = THEME.Accent
-    WPListFrame.BorderSizePixel = 1
-    WPListFrame.ScrollBarThickness = 5
-    WPListFrame.ScrollBarImageColor3 = THEME.Accent
-    WPListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    WPListFrame.ZIndex = 12
-    WPListFrame.Parent = ScrollContent
-    Instance.new("UICorner", WPListFrame).CornerRadius = UDim.new(0, 4)
-    local WPListContainer = Instance.new("Frame")
-    WPListContainer.Size = UDim2.new(1, -10, 1, -10)
-    WPListContainer.Position = UDim2.new(0, 5, 0, 5)
-    WPListContainer.BackgroundTransparency = 1
-    WPListContainer.ZIndex = 13
-    WPListContainer.Parent = WPListFrame
-    task.spawn(function()
-        while task.wait(1) do
-            pcall(function()
-                for _, c in pairs(WPListContainer:GetChildren()) do c:Destroy() end
-                local y = 0
-                for i, wp in ipairs(Waypoints) do
-                    local b = Instance.new("TextButton")
-                    b.Size = UDim2.new(1, 0, 0, 24)
-                    b.Position = UDim2.new(0, 0, 0, y)
-                    b.BackgroundColor3 = THEME.ButtonBG
-                    b.BorderColor3 = THEME.Accent
-                    b.BorderSizePixel = 1
-                    b.Text = "> " .. wp.Name
-                    b.TextColor3 = THEME.Text
-                    b.Font = Enum.Font.Code
-                    b.TextSize = 10
-                    b.TextXAlignment = Enum.TextXAlignment.Left
-                    b.ZIndex = 14
-                    b.Parent = WPListContainer
-                    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 3)
-                    b.MouseButton1Click:Connect(function() GotoWaypoint(wp) end)
-                    y = y + 28
-                end
-                WPListFrame.CanvasSize = UDim2.new(0, 0, 0, y + 5)
-            end)
-        end
-    end)
+    Section("=== 🗺️ WAYPOINT ===", 2338)
+    local WPInput = Input("> Waypoint name", 2370, "Base")
+    Toggle("> ➕ ADD WAYPOINT", 2407, function(btn) AddWaypoint(WPInput.Text) end)
 
     -- CHAT SPAM
-    Section("=== CHAT SPAM ===", 2819)
-    Toggle("> CHAT SPAM: OFF", 2851, function(btn)
+    Section("=== CHAT SPAM ===", 2455)
+    Toggle("> CHAT SPAM: OFF", 2487, function(btn)
         ChatSpamEnabled = not ChatSpamEnabled
         btn.Text = ChatSpamEnabled and "> CHAT SPAM: ON" or "> CHAT SPAM: OFF"
         btn.BackgroundColor3 = ChatSpamEnabled and THEME.ButtonActive or THEME.ButtonBG
         if ChatSpamEnabled then EnableChatSpam() else DisableChatSpam() end
     end)
-    local ChatInput = Input("> Message", 2891, ChatSpamText)
+    local ChatInput = Input("> Message", 2527, ChatSpamText)
     ChatInput.FocusLost:Connect(function(enterPressed)
         if enterPressed and ChatInput.Text ~= "" then ChatSpamText = ChatInput.Text end
     end)
 
     -- SERVER HOP
-    Section("=== 🌐 SERVER HOP ===", 2937)
-    Toggle("> 🌐 SERVER HOP (RANDOM)", 2969, function(btn) DoServerHop() end)
-    Half("> 🎯 BEST SERVER", 3009, 0, function(btn) DoBestServerHop() end)
-    Half("> 🔄 REJOIN", 3009, 0.5, function(btn) DoRejoin() end)
+    Section("=== 🌐 SERVER HOP ===", 2573)
+    Toggle("> 🌐 SERVER HOP (RANDOM)", 2605, function(btn) DoServerHop() end)
+    Half("> 🎯 BEST SERVER", 2645, 0, function(btn) DoBestServerHop() end)
+    Half("> 🔄 REJOIN", 2645, 0.5, function(btn) DoRejoin() end)
 
     -- TELEPORT KE ORANG
-    Section("=== 🆕 TELEPORT KE ORANG ===", 3057)
+    Section("=== 🆕 TELEPORT KE ORANG ===", 2693)
     TeleportListFrame = Instance.new("ScrollingFrame")
     TeleportListFrame.Size = UDim2.new(1, -20, 0, 130)
-    TeleportListFrame.Position = UDim2.new(0, 10, 0, 3089)
+    TeleportListFrame.Position = UDim2.new(0, 10, 0, 2725)
     TeleportListFrame.BackgroundColor3 = THEME.PanelBG
     TeleportListFrame.BorderColor3 = THEME.Accent
     TeleportListFrame.BorderSizePixel = 1
@@ -2554,10 +2334,10 @@ local function CreateUI()
     end)
 
     -- TELEPORT
-    Section("=== TELEPORT ===", 3239)
-    Toggle("> TELEPORT TO MOUSE", 3271, function(btn) TeleportToMouse() end)
-    Half("> SAVE LOC", 3311, 0, function(btn) SaveLocation() end)
-    Half("> LOAD LOC", 3311, 0.5, function(btn) LoadLocation() end)
+    Section("=== TELEPORT ===", 2875)
+    Toggle("> TELEPORT TO MOUSE", 2907, function(btn) TeleportToMouse() end)
+    Half("> SAVE LOC", 2947, 0, function(btn) SaveLocation() end)
+    Half("> LOAD LOC", 2947, 0.5, function(btn) LoadLocation() end)
 
     -- MENU BUTTON
     local ToggleMenuButton = Instance.new("TextButton")
@@ -2613,15 +2393,15 @@ local function CreateUI()
     end
     MakeDraggable(MainHub)
 
-    -- INFO PANEL
+    -- INFO PANEL (setelah UI utama siap)
     if InfoPanelEnabled then CreateInfoPanel() end
 
-    -- 🔴 TESTING: AUTO ACTIVATE + LANGSUNG MUNCUL MENU
+    -- 🔴 LOADING → LANGSUNG MUNCUL MENU
     task.spawn(function()
-        for i = 1, 100 do
+        for i = 1, 50 do
             task.wait(0.04)
-            LBarFill.Size = UDim2.new(i / 100, 0, 1, 0)
-            LPercent.Text = i .. "%"
+            LBarFill.Size = UDim2.new(i / 50, 0, 1, 0)
+            LPercent.Text = (i * 2) .. "%"
         end
         task.wait(0.3)
         LoadingScreen.Visible = false
@@ -2631,14 +2411,14 @@ local function CreateUI()
         IsLoggedIn = true
 
         -- 🔴 AUTO ACTIVATE
-        ActivateAntiKick()
-        ActivateAutoReconnect()
-        if KillNotifEnabled then EnableKillNotif() end
+        pcall(ActivateAntiKick)
+        pcall(ActivateAutoReconnect)
+        pcall(EnableKillNotif)
 
-        Notify("V4.4 TESTING", "> LANGSUNG SIAP (NO LOGIN)", 3)
-        Notify("🛡️ SAFE MODE", "> Anti-Kick + Auto-Reconnect ON", 3)
-        task.wait(0.3)
-        RefreshTeleportList()
+        Notify("V4.4 TESTING", "> LANGSUNG SIAP!", 3)
+        task.wait(0.5)
+        pcall(RefreshTeleportList)
+        print("[ZET] SUCCESS! Menu visible!")
     end)
 end
 
@@ -2646,5 +2426,8 @@ end
 -- RUN
 --==============================================================
 print("[ZET] Starting UI...")
-pcall(CreateUI)
-print("[ZET] V4.4 TESTING loaded successfully!")
+local uiOk, uiErr = pcall(CreateUI)
+if not uiOk then
+    print("[ZET] ERROR di CreateUI: " .. tostring(uiErr))
+end
+print("[ZET] Script loaded successfully!")
