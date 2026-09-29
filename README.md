@@ -1,5 +1,5 @@
 --[[
-    ZetGames-AimLock-Advanserver V4.4 | TESTING BUILD FULL FIX V2
+    ZetGames-AimLock-Advanserver V4.4 | TESTING BUILD FULL FIX V3
     Theme: Red & Black
     Login: ❌ TANPA LOGIN
     Night Lock: ❌ HAPUS
@@ -27,7 +27,7 @@ local Mouse = LocalPlayer:GetMouse()
 
 pcall(function() SoundService.RespectFilteringEnabled = false end)
 
-print("[ZET] Loading V4.4 TESTING FULL FIX V2...")
+print("[ZET] Loading V4.4 TESTING FULL FIX V3...")
 
 --==============================================================
 -- THEME
@@ -53,7 +53,7 @@ THEME.Locked = Color3.fromRGB(150,150,150)
 THEME.LockedBG = Color3.fromRGB(40,40,40)
 
 --==============================================================
--- HIGH SECURITY GAMES
+-- HIGH SECURITY
 --==============================================================
 local HIGH_SECURITY_GAMES = {[920587237]=true,[2788229376]=true,[160331737]=true,[3260590327]=true,[286090429]=true,[142823291]=true}
 local function IsHighSecurityGame() return HIGH_SECURITY_GAMES[game.PlaceId] == true end
@@ -87,7 +87,7 @@ local function DisconnectKey(key)
     end
 end
 
--- Feature Flags (SEMUA DEFAULT OFF)
+-- Feature Flags (DEFAULT OFF)
 local AimbotEnabled = false
 local AimbotTargetPart = "Head"
 local AimbotFOV = 250
@@ -189,16 +189,15 @@ local AutoShootEnabled = false
 local AutoShootDelay = 100
 local DroneModeEnabled = false
 
-local KillNotifEnabled = false  -- 🔧 FIX: OFF default
+local KillNotifEnabled = false
 local LastPlayerHealth = {}
-local InfoPanelEnabled = false  -- 🔧 FIX: OFF default
+local InfoPanelEnabled = false
+local InfoPanelFrame = nil
 
 local Waypoints = {}
-local WaypointFrame = nil
-local WaypointContainer = nil
 
-local AntiKickEnabled = true  -- LOCKED
-local AutoReconnectEnabled = true  -- LOCKED
+local AntiKickEnabled = true
+local AutoReconnectEnabled = true
 local ReconnectAttempts = 0
 local MaxReconnectAttempts = 5
 local WatchdogLastPing = tick()
@@ -374,7 +373,7 @@ local function DisableOffScreenArrow()
 end
 
 --==============================================================
--- ANTI-KICK (LOCKED)
+-- ANTI-KICK
 --==============================================================
 local BlockedKeywords = {"exploit", "cheat", "hack", "aimbot", "ban", "detect", "script", "injector", "banned", "violation", "suspicious", "anti-cheat", "anticheat"}
 local LegitKeywords = {"shutdown", "restart", "update", "maintenance", "rejoin"}
@@ -406,7 +405,7 @@ local function ActivateAntiKick()
 end
 
 --==============================================================
--- AUTO-RECONNECT (LOCKED)
+-- AUTO-RECONNECT
 --==============================================================
 local function AttemptReconnect()
     if ReconnectAttempts >= MaxReconnectAttempts then ReconnectAttempts = 0; return end
@@ -734,7 +733,8 @@ local function EnableInvisible()
     DisconnectKey("Invisible")
     local char = LocalPlayer.Character
     if not char then return end
-    for _, part in pairs(char:GetDescendants()) do        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
             if not InvisibleOriginalTransparency[part] then InvisibleOriginalTransparency[part] = part.Transparency end
             part.Transparency = 0.95
         elseif part:IsA("Decal") then
@@ -1485,10 +1485,9 @@ local function CreateInfoPanel()
                 local time = os.date("%H:%M:%S")
                 InfoPanelLabel.Text = "> Ping: " .. ping .. "ms\n> Players: " .. pc .. "\n> " .. time
             end)
-        end    end)
+        end
+    end)
 end
-
-local InfoPanelFrame = nil
 
 --==============================================================
 -- SERVER HOP / TELEPORT
@@ -1678,7 +1677,7 @@ local function CreateUI()
     LTag.Size = UDim2.new(1, -20, 0, 18)
     LTag.Position = UDim2.new(0, 10, 0, 45)
     LTag.BackgroundTransparency = 1
-    LTag.Text = "[ FULL FIX V2 ]"
+    LTag.Text = "[ FULL FIX V3 ]"
     LTag.TextColor3 = Color3.fromRGB(255, 200, 0)
     LTag.Font = Enum.Font.Code
     LTag.TextSize = 9
@@ -1750,10 +1749,10 @@ local function CreateUI()
     TitleText.Size = UDim2.new(1, -50, 1, 0)
     TitleText.Position = UDim2.new(0, 10, 0, 0)
     TitleText.BackgroundTransparency = 1
-    TitleText.Text = "● V4.4 TESTING [FULL FIX V2]"
+    TitleText.Text = "● V4.4 TESTING [FULL FIX V3]"
     TitleText.TextColor3 = THEME.Text
     TitleText.Font = Enum.Font.Code
-    TitleText.TextSize = 11
+    TitleText.TextSize = 10
     TitleText.TextXAlignment = Enum.TextXAlignment.Left
     TitleText.ZIndex = 12
     TitleText.Parent = TitleBar
@@ -1985,7 +1984,7 @@ local function CreateUI()
     BuildLbl.Size = UDim2.new(1, -15, 0, 22)
     BuildLbl.Position = UDim2.new(0, 10, 0, 51)
     BuildLbl.BackgroundTransparency = 1
-    BuildLbl.Text = "> BUILD: V4.4 TESTING FULL FIX V2"
+    BuildLbl.Text = "> BUILD: V4.4 TESTING FULL FIX V3"
     BuildLbl.TextColor3 = Color3.fromRGB(255, 200, 0)
     BuildLbl.Font = Enum.Font.Code
     BuildLbl.TextSize = 10
@@ -2074,7 +2073,7 @@ local function CreateUI()
         end
     end)
 
-    -- ===== AIMBOT + FOV =====
+    -- ===== AIMBOT =====
     Section("=== 🎯 AIMBOT + FOV ===", 861)
 
     local AimbotBtn = Instance.new("TextButton")
@@ -2096,25 +2095,69 @@ local function CreateUI()
         else AimbotBtn.Text = "> AIMBOT: OFF"; AimbotBtn.BackgroundColor3 = THEME.ButtonBG; AimbotStickyTarget = nil; AimbotStickyType = nil; DisconnectKey("Aimbot") end
     end)
 
-    Toggle("> 🎯 SILENT AIM: OFF", 945, function(btn)
+    -- 🎯 TARGET PART SELECTOR
+    local TargetPartLbl = Instance.new("TextLabel")
+    TargetPartLbl.Size = UDim2.new(1, -20, 0, 18)
+    TargetPartLbl.Position = UDim2.new(0, 10, 0, 940)
+    TargetPartLbl.BackgroundTransparency = 1
+    TargetPartLbl.Text = "> TARGET PART: KEPALA"
+    TargetPartLbl.TextColor3 = THEME.Text
+    TargetPartLbl.Font = Enum.Font.Code
+    TargetPartLbl.TextSize = 10
+    TargetPartLbl.TextXAlignment = Enum.TextXAlignment.Left
+    TargetPartLbl.ZIndex = 12
+    TargetPartLbl.Parent = ScrollContent
+
+    local TargetPartFrame = Instance.new("Frame")
+    TargetPartFrame.Size = UDim2.new(1, -20, 0, 30)
+    TargetPartFrame.Position = UDim2.new(0, 10, 0, 962)
+    TargetPartFrame.BackgroundTransparency = 1
+    TargetPartFrame.ZIndex = 12
+    TargetPartFrame.Parent = ScrollContent
+
+    local function TargetPartBtn(text, part, xPos)
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(0.32, 0, 1, 0)
+        b.Position = UDim2.new(xPos, 0, 0, 0)
+        b.BackgroundColor3 = THEME.ButtonBG
+        b.BorderColor3 = THEME.Accent
+        b.BorderSizePixel = 1
+        b.Text = text
+        b.TextColor3 = THEME.Text
+        b.Font = Enum.Font.Code
+        b.TextSize = 10
+        b.ZIndex = 13
+        b.Parent = TargetPartFrame
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 3)
+        b.MouseButton1Click:Connect(function()
+            AimbotTargetPart = part
+            TargetPartLbl.Text = "> TARGET PART: " .. text
+            Notify("Aimbot", "> Target: " .. text, 2)
+        end)
+    end
+    TargetPartBtn("KEPALA", "Head", 0)
+    TargetPartBtn("BADAN", "UpperTorso", 0.345)
+    TargetPartBtn("LEHER", "Neck", 0.69)
+
+    Toggle("> 🎯 SILENT AIM: OFF", 1000, function(btn)
         SilentAimEnabled = not SilentAimEnabled
         btn.Text = SilentAimEnabled and "> 🎯 SILENT AIM: ON" or "> 🎯 SILENT AIM: OFF"
         btn.BackgroundColor3 = SilentAimEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Half("> FOV: OFF", 985, 0, function(btn)
+    Half("> FOV: OFF", 1040, 0, function(btn)
         FOVCircleEnabled = not FOVCircleEnabled
         btn.Text = FOVCircleEnabled and "> FOV: ON" or "> FOV: OFF"
         btn.BackgroundColor3 = FOVCircleEnabled and THEME.ButtonActive or THEME.ButtonBG
         if FOVCircleEnabled then EnableFOVLoop() else DisableFOVLoop() end
     end)
-    Half("> TEAM: OFF", 985, 0.5, function(btn)
+    Half("> TEAM: OFF", 1040, 0.5, function(btn)
         AimbotTeamCheck = not AimbotTeamCheck
         btn.Text = AimbotTeamCheck and "> TEAM: ON" or "> TEAM: OFF"
         btn.BackgroundColor3 = AimbotTeamCheck and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    local FOVInput = Input("> FOV Radius (50-5000)", 1023, tostring(FOVRadius))
+    local FOVInput = Input("> FOV Radius (50-5000)", 1078, tostring(FOVRadius))
     FOVInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nf = tonumber(FOVInput.Text)
@@ -2123,7 +2166,7 @@ local function CreateUI()
         end
     end)
 
-    local FOVThicknessInput = Input("> FOV Thickness (1-10)", 1059, tostring(FOVThickness))
+    local FOVThicknessInput = Input("> FOV Thickness (1-10)", 1114, tostring(FOVThickness))
     FOVThicknessInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nt = tonumber(FOVThicknessInput.Text)
@@ -2132,26 +2175,26 @@ local function CreateUI()
         end
     end)
 
-    Toggle("> KEYBIND AIMBOT (E): OFF", 1095, function(btn)
+    Toggle("> KEYBIND AIMBOT (E): OFF", 1150, function(btn)
         AimKeybindEnabled = not AimKeybindEnabled
         btn.Text = AimKeybindEnabled and "> KEYBIND (E): ON" or "> KEYBIND (E): OFF"
         btn.BackgroundColor3 = AimKeybindEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Toggle("> WALL CHECK: OFF", 1135, function(btn)
+    Toggle("> WALL CHECK: OFF", 1190, function(btn)
         AimbotWallCheck = not AimbotWallCheck
         btn.Text = AimbotWallCheck and "> WALL: ON" or "> WALL: OFF"
         btn.BackgroundColor3 = AimbotWallCheck and THEME.ButtonActive or THEME.ButtonBG
     end)
 
-    Toggle("> 🔫 AUTO SHOOT: OFF", 1175, function(btn)
+    Toggle("> 🔫 AUTO SHOOT: OFF", 1230, function(btn)
         AutoShootEnabled = not AutoShootEnabled
         btn.Text = AutoShootEnabled and "> AUTO SHOOT: ON" or "> AUTO SHOOT: OFF"
         btn.BackgroundColor3 = AutoShootEnabled and THEME.ButtonActive or THEME.ButtonBG
         if AutoShootEnabled then EnableAimbotLoop() end
     end)
 
-    Toggle("> 📡 OFF-SCREEN ARROW: OFF", 1215, function(btn)
+    Toggle("> 📡 OFF-SCREEN ARROW: OFF", 1270, function(btn)
         OffScreenArrowEnabled = not OffScreenArrowEnabled
         btn.Text = OffScreenArrowEnabled and "> OFF-ARROW: ON" or "> OFF-ARROW: OFF"
         btn.BackgroundColor3 = OffScreenArrowEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2159,39 +2202,39 @@ local function CreateUI()
     end)
 
     -- ===== ESP =====
-    Section("=== 👁️ FULL ESP ===", 1263)
-    Toggle("> ESP MASTER: OFF", 1295, function(btn)
+    Section("=== 👁️ FULL ESP ===", 1318)
+    Toggle("> ESP MASTER: OFF", 1350, function(btn)
         ESPEnabled = not ESPEnabled
         btn.Text = ESPEnabled and "> ESP MASTER: ON" or "> ESP MASTER: OFF"
         btn.BackgroundColor3 = ESPEnabled and THEME.ButtonActive or THEME.ButtonBG
         if ESPEnabled then EnableESPLoop() else DisableESPLoop() end
     end)
-    Toggle("> 🌈 RAINBOW ESP: OFF", 1335, function(btn)
+    Toggle("> 🌈 RAINBOW ESP: OFF", 1390, function(btn)
         RainbowESPEnabled = not RainbowESPEnabled
         btn.Text = RainbowESPEnabled and "> 🌈 RAINBOW: ON" or "> 🌈 RAINBOW: OFF"
         btn.BackgroundColor3 = RainbowESPEnabled and THEME.ButtonActive or THEME.ButtonBG
         if RainbowESPEnabled then EnableRainbowESP() else DisableRainbowESP() end
     end)
-    Toggle("> NPC ESP: OFF", 1375, function(btn)
+    Toggle("> NPC ESP: OFF", 1430, function(btn)
         NPCEspEnabled = not NPCEspEnabled
         btn.Text = NPCEspEnabled and "> NPC ESP: ON" or "> NPC ESP: OFF"
         btn.BackgroundColor3 = NPCEspEnabled and THEME.ButtonActive or THEME.ButtonBG
         if not NPCEspEnabled then for model, _ in pairs(NPCESPObjects) do RemoveNPCEsp(model) end end
     end)
-    Toggle("> NPC DETECTION: OFF", 1415, function(btn)
+    Toggle("> NPC DETECTION: OFF", 1470, function(btn)
         NPCDetectionEnabled = not NPCDetectionEnabled
         btn.Text = NPCDetectionEnabled and "> NPC DETECTION: ON" or "> NPC DETECTION: OFF"
         btn.BackgroundColor3 = NPCDetectionEnabled and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     -- ===== HITBOX =====
-    Section("=== 🎯 HITBOX ===", 1463)
-    Toggle("> HITBOX: OFF", 1495, function(btn)
+    Section("=== 🎯 HITBOX ===", 1518)
+    Toggle("> HITBOX: OFF", 1550, function(btn)
         HitboxEnabled = not HitboxEnabled
         if HitboxEnabled then btn.Text = "> HITBOX: ON"; btn.BackgroundColor3 = THEME.ButtonActive; EnableHitboxExpander()
         else btn.Text = "> HITBOX: OFF"; btn.BackgroundColor3 = THEME.ButtonBG; DisableHitboxExpander() end
     end)
-    local HitboxInput = Input("> Size (1-1000)", 1535, tostring(HitboxSize))
+    local HitboxInput = Input("> Size (1-1000)", 1590, tostring(HitboxSize))
     HitboxInput.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local nh = tonumber(HitboxInput.Text)
@@ -2201,8 +2244,8 @@ local function CreateUI()
     end)
 
     -- ===== DRONE =====
-    Section("=== 🚁 DRONE MODE ===", 1581)
-    Toggle("> DRONE CAMERA: OFF", 1613, function(btn)
+    Section("=== 🚁 DRONE MODE ===", 1636)
+    Toggle("> DRONE CAMERA: OFF", 1668, function(btn)
         DroneModeEnabled = not DroneModeEnabled
         btn.Text = DroneModeEnabled and "> DRONE: ON" or "> DRONE: OFF"
         btn.BackgroundColor3 = DroneModeEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2210,20 +2253,20 @@ local function CreateUI()
     end)
 
     -- ===== SURVIVAL =====
-    Section("=== SURVIVAL ===", 1661)
-    Toggle("> AUTO RESPAWN: OFF", 1693, function(btn)
+    Section("=== SURVIVAL ===", 1716)
+    Toggle("> AUTO RESPAWN: OFF", 1748, function(btn)
         AutoRespawnEnabled = not AutoRespawnEnabled
         btn.Text = AutoRespawnEnabled and "> AUTO RESPAWN: ON" or "> AUTO RESPAWN: OFF"
         btn.BackgroundColor3 = AutoRespawnEnabled and THEME.ButtonActive or THEME.ButtonBG
         if AutoRespawnEnabled then EnableAutoRespawn() else DisableAutoRespawn() end
     end)
-    Toggle("> ANTI-FLING: OFF", 1733, function(btn)
+    Toggle("> ANTI-FLING: OFF", 1788, function(btn)
         AntiFlingEnabled = not AntiFlingEnabled
         btn.Text = AntiFlingEnabled and "> ANTI-FLING: ON" or "> ANTI-FLING: OFF"
         btn.BackgroundColor3 = AntiFlingEnabled and THEME.ButtonActive or THEME.ButtonBG
         if AntiFlingEnabled then EnableAntiFling() else DisableAntiFling() end
     end)
-    Toggle("> ANTI-AFK: OFF", 1773, function(btn)
+    Toggle("> ANTI-AFK: OFF", 1828, function(btn)
         AntiAFKEnabled = not AntiAFKEnabled
         btn.Text = AntiAFKEnabled and "> ANTI-AFK: ON" or "> ANTI-AFK: OFF"
         btn.BackgroundColor3 = AntiAFKEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2231,22 +2274,22 @@ local function CreateUI()
     end)
 
     -- ===== FLY-VOID =====
-    Section("=== 🕳️ FLY-VOID V2 ===", 1821)
-    Toggle("> FLY-VOID: OFF", 1853, function(btn)
+    Section("=== 🕳️ FLY-VOID V2 ===", 1876)
+    Toggle("> FLY-VOID: OFF", 1908, function(btn)
         FlyVoidEnabled = not FlyVoidEnabled
         if FlyVoidEnabled then btn.Text = "> FLY-VOID: ON"; btn.BackgroundColor3 = THEME.ButtonActive; EnableFlyVoid()
         else btn.Text = "> FLY-VOID: OFF"; btn.BackgroundColor3 = THEME.ButtonBG; DisableFlyVoid() end
     end)
-    Half("> HIDE: OFF", 1893, 0, function(btn)
+    Half("> HIDE: OFF", 1948, 0, function(btn)
         FlyVoidHideMode = not FlyVoidHideMode
         btn.Text = FlyVoidHideMode and "> HIDE: ON" or "> HIDE: OFF"
         btn.BackgroundColor3 = FlyVoidHideMode and THEME.ButtonActive or THEME.ButtonBG
     end)
-    Half("> KEY: V", 1893, 0.5, function(btn) Notify("Fly-Void", "> Tekan V", 2) end)
+    Half("> KEY: V", 1948, 0.5, function(btn) Notify("Fly-Void", "> Tekan V", 2) end)
 
     -- ===== SOUND =====
-    Section("=== SOUND ESP ===", 1941)
-    Toggle("> SOUND ESP: OFF", 1973, function(btn)
+    Section("=== SOUND ESP ===", 1996)
+    Toggle("> SOUND ESP: OFF", 2028, function(btn)
         SoundESPEnabled = not SoundESPEnabled
         btn.Text = SoundESPEnabled and "> SOUND ESP: ON" or "> SOUND ESP: OFF"
         btn.BackgroundColor3 = SoundESPEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2254,29 +2297,29 @@ local function CreateUI()
     end)
 
     -- ===== MUSIC =====
-    Section("=== 🎵 MUSIC PLAYLIST V2 ===", 2021)
-    Toggle("> MUSIC: OFF", 2053, function(btn)
+    Section("=== 🎵 MUSIC PLAYLIST V2 ===", 2076)
+    Toggle("> MUSIC: OFF", 2108, function(btn)
         MusicPlayerEnabled = not MusicPlayerEnabled
         btn.Text = MusicPlayerEnabled and "> MUSIC: ON" or "> MUSIC: OFF"
         btn.BackgroundColor3 = MusicPlayerEnabled and THEME.ButtonActive or THEME.ButtonBG
         if MusicPlayerEnabled then PlayMusic() else StopMusic() end
     end)
-    Half("> ⏮ PREV", 2093, 0, function(btn) PrevMusic() end)
-    Half("> ⏭ NEXT", 2093, 0.5, function(btn) NextMusic() end)
-    Half("> SHUFFLE: OFF", 2130, 0, function(btn)
+    Half("> ⏮ PREV", 2148, 0, function(btn) PrevMusic() end)
+    Half("> ⏭ NEXT", 2148, 0.5, function(btn) NextMusic() end)
+    Half("> SHUFFLE: OFF", 2185, 0, function(btn)
         MusicShuffle = not MusicShuffle
         btn.Text = MusicShuffle and "> SHUFFLE: ON" or "> SHUFFLE: OFF"
         btn.BackgroundColor3 = MusicShuffle and THEME.ButtonActive or THEME.ButtonBG
     end)
-    Half("> REPEAT: ON", 2130, 0.5, function(btn)
+    Half("> REPEAT: ON", 2185, 0.5, function(btn)
         MusicRepeatAll = not MusicRepeatAll
         btn.Text = MusicRepeatAll and "> REPEAT: ON" or "> REPEAT: OFF"
         btn.BackgroundColor3 = MusicRepeatAll and THEME.ButtonActive or THEME.ButtonBG
     end)
 
     -- ===== KILL NOTIF =====
-    Section("=== 🔔 KILL NOTIF ===", 2178)
-    Toggle("> KILL NOTIF: OFF", 2210, function(btn)
+    Section("=== 🔔 KILL NOTIF ===", 2233)
+    Toggle("> KILL NOTIF: OFF", 2265, function(btn)
         KillNotifEnabled = not KillNotifEnabled
         btn.Text = KillNotifEnabled and "> KILL NOTIF: ON" or "> KILL NOTIF: OFF"
         btn.BackgroundColor3 = KillNotifEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2284,8 +2327,8 @@ local function CreateUI()
     end)
 
     -- ===== INFO PANEL =====
-    Section("=== 📊 INFO PANEL ===", 2258)
-    Toggle("> INFO PANEL: OFF", 2290, function(btn)
+    Section("=== 📊 INFO PANEL ===", 2313)
+    Toggle("> INFO PANEL: OFF", 2345, function(btn)
         InfoPanelEnabled = not InfoPanelEnabled
         btn.Text = InfoPanelEnabled and "> INFO PANEL: ON" or "> INFO PANEL: OFF"
         btn.BackgroundColor3 = InfoPanelEnabled and THEME.ButtonActive or THEME.ButtonBG
@@ -2297,34 +2340,34 @@ local function CreateUI()
     end)
 
     -- ===== WAYPOINT =====
-    Section("=== 🗺️ WAYPOINT ===", 2338)
-    local WPInput = Input("> Waypoint name", 2370, "Base")
-    Toggle("> ➕ ADD WAYPOINT", 2407, function(btn) AddWaypoint(WPInput.Text) end)
+    Section("=== 🗺️ WAYPOINT ===", 2393)
+    local WPInput = Input("> Waypoint name", 2425, "Base")
+    Toggle("> ➕ ADD WAYPOINT", 2462, function(btn) AddWaypoint(WPInput.Text) end)
 
     -- ===== CHAT SPAM =====
-    Section("=== CHAT SPAM ===", 2455)
-    Toggle("> CHAT SPAM: OFF", 2487, function(btn)
+    Section("=== CHAT SPAM ===", 2510)
+    Toggle("> CHAT SPAM: OFF", 2542, function(btn)
         ChatSpamEnabled = not ChatSpamEnabled
         btn.Text = ChatSpamEnabled and "> CHAT SPAM: ON" or "> CHAT SPAM: OFF"
         btn.BackgroundColor3 = ChatSpamEnabled and THEME.ButtonActive or THEME.ButtonBG
         if ChatSpamEnabled then EnableChatSpam() else DisableChatSpam() end
     end)
-    local ChatInput = Input("> Message", 2527, ChatSpamText)
+    local ChatInput = Input("> Message", 2582, ChatSpamText)
     ChatInput.FocusLost:Connect(function(enterPressed)
         if enterPressed and ChatInput.Text ~= "" then ChatSpamText = ChatInput.Text end
     end)
 
     -- ===== SERVER HOP =====
-    Section("=== 🌐 SERVER HOP ===", 2573)
-    Toggle("> 🌐 SERVER HOP (RANDOM)", 2605, function(btn) DoServerHop() end)
-    Half("> 🎯 BEST SERVER", 2645, 0, function(btn) DoBestServerHop() end)
-    Half("> 🔄 REJOIN", 2645, 0.5, function(btn) DoRejoin() end)
+    Section("=== 🌐 SERVER HOP ===", 2628)
+    Toggle("> 🌐 SERVER HOP (RANDOM)", 2660, function(btn) DoServerHop() end)
+    Half("> 🎯 BEST SERVER", 2700, 0, function(btn) DoBestServerHop() end)
+    Half("> 🔄 REJOIN", 2700, 0.5, function(btn) DoRejoin() end)
 
     -- ===== TELEPORT KE ORANG =====
-    Section("=== 🆕 TELEPORT KE ORANG ===", 2693)
+    Section("=== 🆕 TELEPORT KE ORANG ===", 2748)
     TeleportListFrame = Instance.new("ScrollingFrame")
     TeleportListFrame.Size = UDim2.new(1, -20, 0, 130)
-    TeleportListFrame.Position = UDim2.new(0, 10, 0, 2725)
+    TeleportListFrame.Position = UDim2.new(0, 10, 0, 2780)
     TeleportListFrame.BackgroundColor3 = THEME.PanelBG
     TeleportListFrame.BorderColor3 = THEME.Accent
     TeleportListFrame.BorderSizePixel = 1
@@ -2347,12 +2390,12 @@ local function CreateUI()
     end)
 
     -- ===== TELEPORT =====
-    Section("=== TELEPORT ===", 2875)
-    Toggle("> TELEPORT TO MOUSE", 2907, function(btn) TeleportToMouse() end)
-    Half("> SAVE LOC", 2947, 0, function(btn) SaveLocation() end)
-    Half("> LOAD LOC", 2947, 0.5, function(btn) LoadLocation() end)
+    Section("=== TELEPORT ===", 2930)
+    Toggle("> TELEPORT TO MOUSE", 2962, function(btn) TeleportToMouse() end)
+    Half("> SAVE LOC", 3002, 0, function(btn) SaveLocation() end)
+    Half("> LOAD LOC", 3002, 0.5, function(btn) LoadLocation() end)
 
-    -- ===== MENU BUTTON =====
+    -- ===== MENU BUTTON (DRAGGABLE) =====
     local ToggleMenuButton = Instance.new("TextButton")
     ToggleMenuButton.Name = "ZetMenuBtn"
     ToggleMenuButton.Size = UDim2.new(0, 50, 0, 50)
@@ -2369,10 +2412,46 @@ local function CreateUI()
     ToggleMenuButton.Parent = ScreenGui
     Instance.new("UICorner", ToggleMenuButton).CornerRadius = UDim.new(0, 25)
 
+    -- 🔧 DRAG + CLICK TERPISAH
+    local btnDragging = false
+    local btnDragStart = nil
+    local btnStartPos = nil
+    local btnMoved = false
+
+    ToggleMenuButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            btnDragging = true
+            btnMoved = false
+            btnDragStart = input.Position
+            btnStartPos = ToggleMenuButton.Position
+        end
+    end)
+
+    ToggleMenuButton.InputChanged:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and btnDragging then
+            local delta = input.Position - btnDragStart
+            if math.abs(delta.X) > 8 or math.abs(delta.Y) > 8 then btnMoved = true end
+            if btnMoved then
+                ToggleMenuButton.Position = UDim2.new(
+                    btnStartPos.X.Scale, btnStartPos.X.Offset + delta.X,
+                    btnStartPos.Y.Scale, btnStartPos.Y.Offset + delta.Y
+                )
+            end
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            btnDragging = false
+        end
+    end)
+
     ToggleMenuButton.MouseButton1Click:Connect(function()
+        if btnMoved then return end
         MenuVisible = not MenuVisible
         MainHub.Visible = MenuVisible
     end)
+
     CloseBtn.MouseButton1Click:Connect(function()
         MenuVisible = false
         MainHub.Visible = false
@@ -2386,7 +2465,7 @@ local function CreateUI()
         end
     end)
 
-    -- ===== DRAGGABLE =====
+    -- ===== DRAGGABLE MAIN HUB =====
     local function MakeDraggable(frame)
         local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
         frame.InputBegan:Connect(function(input)
@@ -2409,7 +2488,7 @@ local function CreateUI()
     end
     MakeDraggable(MainHub)
 
-    -- ===== AUTO-CLAMP biar gak keluar screen =====
+    -- AUTO-CLAMP Menu
     MainHub:GetPropertyChangedSignal("Position"):Connect(function()
         local vpSize = Camera.ViewportSize
         local pos = MainHub.AbsolutePosition
@@ -2435,11 +2514,10 @@ local function CreateUI()
         MenuVisible = true
         IsLoggedIn = true
 
-        -- AUTO ACTIVATE (cuma Anti-Kick + Reconnect)
         pcall(ActivateAntiKick)
         pcall(ActivateAutoReconnect)
 
-        Notify("V4.4 TESTING", "> FULL FIX V2 LOADED!", 3)
+        Notify("V4.4 TESTING", "> FULL FIX V3 LOADED!", 3)
         task.wait(0.5)
         pcall(RefreshTeleportList)
         print("[ZET] SUCCESS! Menu visible!")
